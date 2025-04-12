@@ -1,101 +1,183 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Solidreams</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            height: 100vh;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login - Solidreams</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  {% load static %}
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
 
-        .container {
-            text-align: center;
-            padding: 50px;
-            max-width: 400px;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
+    body {
+      display: flex;
+      height: 100vh;
+      width: 100vw;
+    }
 
-        h1 {
-            color: #333;
-            margin-bottom: 30px;
-        }
+    .left-section {
+      width: 50%;
+      padding: 60px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
 
-        label {
-            display: block;
-            margin: 10px 0 5px;
-            font-weight: bold;
-        }
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
 
-        input[type="email"],
-        input[type="password"] {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 15px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            box-sizing: border-box;
-        }
+    .header .title {
+      font-size: 20px;
+      font-weight: 400;
+      color: #000;
+    }
 
-        button[type="submit"] {
-            width: 100%;
-            padding: 10px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
+    .header .logo-img {
+      margin-top: 10px;
+      width: 280px;
+      max-width: 100%;
+    }
 
-        button[type="submit"]:hover {
-            background-color: #45a049;
-        }
+    label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      color: #000;
+      margin-bottom: 8px;
+    }
 
-        .message {
-            margin-top: 20px;
-            color: red;
-        }
+    input[type="email"],
+    input[type="password"] {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      margin-bottom: 20px;
+      font-size: 14px;
+    }
 
-        .logo {
-            margin-bottom: 30px;
-        }
-    </style>
+    .password-container {
+      position: relative;
+    }
+    
+    .password-container input {
+      width: 100%;
+      padding: 12px 12px 12px 12px;
+    }
+    
+    .toggle-password {
+      position: absolute;
+      right: 12px;
+      top: 12px;
+      cursor: pointer;
+      font-size: 18px;
+      width: 20px;
+      height: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .forgot-password {
+      text-align: right;
+      font-size: 12px;
+      margin-bottom: 30px;
+    }
+
+    .forgot-password a {
+      text-decoration: none;
+      color: #000;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      background-color: #D9D9D9;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-bottom: 30px;
+    }
+
+    .bottom-text {
+      font-size: 12px;
+      text-align: center;
+    }
+
+    .bottom-text a {
+      font-weight: bold;
+      color: #000;
+      text-decoration: none;
+    }
+
+    .right-section {
+      width: 50%;
+      background-color: #D9D9D9;
+    }
+
+    @media (max-width: 768px) {
+      body {
+        flex-direction: column;
+      }
+
+      .left-section, .right-section {
+        width: 100%;
+        padding: 30px;
+      }
+
+      .right-section {
+        height: 200px;
+      }
+    }
+  </style>
 </head>
 <body>
-    {% load static %}
-
-    <div class="container">
-        <img src="{% static 'logo.png' %}" alt="Solidreams Logo" class="logo" width="150">
-
-        <h1>Login</h1>
-
-        <form method="POST">
-            {% csrf_token %}
-            <label for="email">Email:</label>
-            <input type="email" id="email" name="email" required>
-
-            <label for="senha">Senha:</label>
-            <input type="password" id="senha" name="senha" required>
-
-            <button type="submit">Entrar</button>
-        </form>
-
-        {% for message in messages %}
-            <p class="message">{{ message }}</p>
-        {% endfor %}
-
-        <p>Não tem uma conta? <a href="{% url 'cadastro' %}">Cadastre-se</a></p>
+  <div class="left-section">
+    <div class="header">
+      <div class="title">BEM VINDO AO</div>
+      <img src="/static/solidreamslogo.png" alt="Logo Solidreams" class="logo-img" />
     </div>
+
+    <form method="POST">
+      {% csrf_token %}
+      <label for="email">Email</label>
+      <input type="email" id="email" name="email" placeholder="Seu email" required />
+
+      <label for="senha">Senha</label>
+      <div class="password-container">
+        <input type="password" id="senha" name="senha" placeholder="Sua senha" required />
+        <span class="toggle-password" onclick="togglePassword()">👁️</span>
+      </div>
+
+      <div class="forgot-password">
+        <a href="#">Esqueci a senha</a>
+      </div>
+
+      <button type="submit">Entrar</button>
+    </form>
+
+    <div class="bottom-text">
+      Quer participar dessa jornada? <a href="#">Fale conosco</a>
+    </div>
+  </div>
+
+  <div class="right-section">
+  </div>
+
+  <script>
+    function togglePassword() {
+      const input = document.getElementById("senha");
+      input.type = input.type === "password" ? "text" : "password";
+    }
+  </script>
 </body>
 </html>

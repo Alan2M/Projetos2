@@ -5,4 +5,6 @@ class MeuAppConfig(AppConfig):
     name = 'meu_app'  
 
     def ready(self):
-        import meu_app.signals
+
+        #import meu_app.signals
+        pass
