@@ -4,13 +4,62 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home - Solidreams</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            text-align: center;
+            padding: 50px;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        #logo {
+            color: #27c274;
+        }
+
+        .btn {
+            display: inline-block;
+            margin: 10px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn:hover {
+            background-color: #45a049;
+        }
+
+        .logout-btn {
+            background-color: #f44336;
+        }
+
+        .logout-btn:hover {
+            background-color: #e53935;
+        }
+    </style>
 </head>
 <body>
-    <h1>Bem-vindo ao Solidreams!</h1>
-    <a href="{% url 'cadastro' %}">Ir para Cadastro</a>
-    <br>
-    <a href="{% url 'login' %}">Ir para Login</a>
-    <br>
-    <a href="{% url 'logout' %}">Sair</a>
+    <div class="container">
+        <h1>Bem-vindo ao <span id="logo">Solidreams</span></h1>
+
+        {% if user.is_authenticated %}
+            <a href="{% url 'logout' %}" class="btn logout-btn">Logout</a>
+        {% else %}
+            <a href="{% url 'cadastro' %}" class="btn">Ir para Cadastro</a>
+            <br>
+            <a href="{% url 'login' %}" class="btn">Ir para Login</a>
+        {% endif %}
+    </div>
 </body>
 </html>
