@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cadastro - Solidreams</title>
+
+    {% load static %}
     <style>
         * {
             margin: 0;
@@ -25,6 +27,7 @@
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             width: 50%;
             max-width: 500px;
+            position: relative;
         }
         h1 {
             text-align: center;
@@ -77,11 +80,32 @@
             background: black;
             color: white;
         }
+        .home-link {
+            position: absolute; 
+            top: 10px;
+            left: 10px;
+            z-index: 10;
+        }
+        .home-link img {
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        .home-link img:hover {
+            transform: scale(1.1);
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>BEM-VINDO AO</h1>
+        <div class="home-link">
+            <a href="{% url 'home' %}">
+                <img src="{% static 'home_icon.png' %}" alt="Ícone de Casa">
+            </a>
+        </div>
+
+        <h1>Cadastro</h1>
         <div class="logo">SOLIDREAMS</div>
         <div class="subtitle">Venha fazer parte dessa jornada!</div>
 
