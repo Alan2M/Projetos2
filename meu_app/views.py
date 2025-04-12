@@ -1,6 +1,8 @@
 from django.shortcuts import render, redirect
-from .models import Usuario
 from django.contrib import messages
+from django.contrib.auth import login, logout
+from django.contrib.auth.models import User
+from .models import Perfil  
 
 def home(request):
     return render(request, 'home.html')
@@ -10,22 +12,23 @@ def cadastro(request):
 
 def processar_cadastro(request):
     if request.method == "POST":
-        nome = request.POST.get("nome")
         email = request.POST.get("email")
         senha = request.POST.get("senha")
-        cpf = request.POST.get("cpf")  
+        cpf = request.POST.get("cpf")
 
-        if Usuario.objects.filter(cpf=cpf).exists():
-            messages.error(request, "Já existe um usuário cadastrado com esse CPF.")
-            return render(request, "cadastro.html")
-
-        if Usuario.objects.filter(email=email).exists():
+        if User.objects.filter(username=email).exists():
             messages.error(request, "Já existe um usuário cadastrado com esse E-mail.")
             return render(request, "cadastro.html")
 
-        usuario = Usuario(nome=nome, email=email, cpf=cpf)
-        usuario.set_senha(senha)  
-        usuario.save()
+        if User.objects.filter(perfil__cpf=cpf).exists(): 
+            messages.error(request, "Já existe um usuário cadastrado com esse CPF.")
+            return render(request, "cadastro.html")
+
+        usuario = User.objects.create_user(username=email, email=email, password=senha)
+        
+        if not hasattr(usuario, 'perfil'):  
+            usuario.perfil = Perfil.objects.create(user=usuario, cpf=cpf)
+            usuario.save()
 
         messages.success(request, "Cadastro realizado com sucesso!")
         return redirect("home")
@@ -37,14 +40,17 @@ def login_usuario(request):
         email = request.POST.get("email")
         senha = request.POST.get("senha")
 
-        try:
-            usuario = Usuario.objects.get(email=email) 
-            if usuario.verificar_senha(senha): 
-                messages.success(request, "Login realizado com sucesso!")
-                return redirect("home")  
-            else:
-                messages.error(request, "Senha incorreta!")  
-        except Usuario.DoesNotExist:
-            messages.error(request, "Usuário não encontrado!")  
+        user = User.objects.filter(username=email).first()  
 
-    return render(request, "login.html") 
+        if user and user.check_password(senha):  
+            login(request, user)
+            messages.success(request, "Login realizado com sucesso!")
+            return redirect("home")
+        else:
+            messages.error(request, "Email ou senha incorretos!")
+
+    return render(request, "login.html")
+
+def logout_usuario(request):
+    logout(request)
+    return redirect('home')
