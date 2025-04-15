@@ -1,0 +1,15 @@
+<h2>Lista de Alunos</h2>
+
+<form method="get">
+    <label for="serie">Filtrar por série:</label>
+    <input type="text" name="serie" id="serie" placeholder="Ex: 3º Ano">
+    <button type="submit">Filtrar</button>
+</form>
+
+<ul>
+    {% for aluno in alunos %}
+        <li>{{ aluno.nome }} - {{ aluno.serie }} - {{ aluno.data_inscricao|date:"d/m/Y H:i" }}</li>
+    {% empty %}
+        <li>Nenhum aluno encontrado.</li>
+    {% endfor %}
+</ul>
