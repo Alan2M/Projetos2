@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.models import User
-from .models import Perfil  
+from .models import Perfil, Aluno
 
 def home(request):
     return render(request, 'home.html')
@@ -54,3 +54,13 @@ def login_usuario(request):
 def logout_usuario(request):
     logout(request)
     return redirect('home')
+
+def lista_alunos(request):
+    serie_filtro = request.GET.get('serie')
+
+    if serie_filtro:
+        alunos = Aluno.objects.filter(serie=serie_filtro).order_by('data_inscricao')
+    else:
+        alunos = Aluno.objects.all().order_by('data_inscricao')
+
+    return render(request, 'lista_alunos.html', {'alunos': alunos})
