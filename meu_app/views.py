@@ -3,6 +3,7 @@ from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.models import User
 from .models import Perfil, Aluno
+from .forms import FiltroAlunoForm
 
 def home(request):
     return render(request, 'home.html', {
@@ -73,14 +74,20 @@ def logout_usuario(request):
     return redirect('home')
 
 def lista_alunos(request):
-    serie_filtro = request.GET.get('serie')
+    form = FiltroAlunoForm(request.GET or None)
+    alunos = Aluno.objects.all()
 
-    if serie_filtro:
-        alunos = Aluno.objects.filter(serie=serie_filtro).order_by('data_inscricao')
-    else:
-        alunos = Aluno.objects.all().order_by('data_inscricao')
+    if form.is_valid():
+        if form.cleaned_data.get('nome'):
+            alunos = alunos.filter(nome__icontains=form.cleaned_data['nome'])
+        if form.cleaned_data.get('email'):
+            alunos = alunos.filter(email__icontains=form.cleaned_data['email'])
+        if form.cleaned_data.get('serie'):
+            alunos = alunos.filter(serie__icontains=form.cleaned_data['serie'])
+        if form.cleaned_data.get('data_inscricao'):
+            alunos = alunos.filter(data_inscricao__date=form.cleaned_data['data_inscricao'])
 
-    return render(request, 'lista_alunos.html', {'alunos': alunos})
+    return render(request, 'Lista_alunos.html', {'form': form, 'alunos': alunos})
 
 def formulario(request):
     if not request.user.is_authenticated:
