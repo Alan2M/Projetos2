@@ -95,3 +95,8 @@ def formulario(request):
         return redirect('login')  
 
     return render(request, 'formulario.html')
+
+from datetime import datetime
+
+def home(request):
+    return render(request, 'home.html', {'now': datetime.now()})
