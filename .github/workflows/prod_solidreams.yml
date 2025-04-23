@@ -1,13 +1,10 @@
-name: Build and deploy Python app to Azure Web App - solidreams
+name: Build and deploy Python app to Azure Web App - PaginaViradaStore
 
 on:
   push:
     branches:
-      - Prod
+      - main
   workflow_dispatch:
-
-env:
-  PROJECT_DIR: PROJETOS2
 
 jobs:
   build:
@@ -23,33 +20,25 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Create and start virtual environment
-        run: |
-          python -m venv venv
-          source venv/bin/activate
-
       - name: Install dependencies
         run: pip install -r requirements.txt
-      - name: Cleaning testing files
+
+      - name: Collect static files
+        run: python manage.py collectstatic --noinput
+
+      - name: Clean testing files
         run: |
-          cd ${{ env.PROJECT_DIR }}
-          rm -f db.sqlite3 .env
-          cd ..
+          rm -f db.sqlite3
+          rm -f .env
 
       - name: Zip artifact for deployment
-        run: |
-          cd ${{ env.PROJECT_DIR }}
-          zip -r release.zip ./*
-          cd ..
-          mv ${{ env.PROJECT_DIR }}/release.zip .
+        run: zip -r release.zip ./*
 
       - name: Upload artifact for deployment jobs
         uses: actions/upload-artifact@v4
         with:
           name: python-app
-          path: |
-            release.zip
-            !venv/
+          path: release.zip
 
   deploy:
     runs-on: ubuntu-latest
