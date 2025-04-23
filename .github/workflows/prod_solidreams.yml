@@ -77,7 +77,7 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_9A2B4CF0A5624773B212748A4E08C8DE }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_81B2B0F3E900452BB736E581218E4951 }}
 
-      - name: 'Projetos2'
+      - name: 'solidreams'
         uses: azure/webapps-deploy@v3
         id: deploy-to-webapp
         with:
