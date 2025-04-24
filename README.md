@@ -27,3 +27,6 @@ Nosso diferencial está na transparência e na comunidade engajada, proporcionan
 ## Link para o Figma
 
 - https://www.figma.com/design/UjQQV7SAHB05uLB3FkJcEr/Untitled?node-id=38-33&t=YN0ni105O4d7HlMF-1
+
+
+## Relato programação em pares
