@@ -203,6 +203,13 @@
         
         <label for="data-nascimento">Data de Nascimento</label>
         <input type="date" id="data-nascimento" name="data-nascimento" value="{{ request.POST.data_nascimento|default:'' }}" required />
+
+        <label for="tipo">Tipo de Usuário</label>
+          <select id="tipo" name="tipo" required style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ccc; margin-bottom: 20px; font-size: 14px;">
+            <option value="">Selecione</option>
+            <option value="aluno" {% if request.POST.tipo == 'aluno' %}selected{% endif %}>Aluno</option>
+            <option value="professor" {% if request.POST.tipo == 'professor' %}selected{% endif %}>Professor</option>
+          </select>
         
         <label for="senha">Senha</label>
         <div class="password-wrapper">
