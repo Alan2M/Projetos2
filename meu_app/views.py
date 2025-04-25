@@ -230,3 +230,65 @@ def formulario_view(request):
         return render(request, "formulario.html", {"respostas": respostas})
 
     return render(request, "formulario.html")
+
+def processar_cadastro(request):
+    if request.method == "POST":
+        email = request.POST.get("email")
+        senha = request.POST.get("senha")
+        confirmar_senha = request.POST.get("confirmar-senha")
+        cpf = request.POST.get("cpf")
+        nome = request.POST.get("nome")
+        celular = request.POST.get("celular")
+        data_nascimento = request.POST.get("data-nascimento")
+        tipo = request.POST.get("tipo")
+
+        context = {
+            'nome': nome,
+            'email': email,
+            'cpf': cpf,
+            'celular': celular,
+            'data_nascimento': data_nascimento,
+            'tipo': tipo,
+        }
+
+        if senha != confirmar_senha:
+            messages.error(request, "As senhas não coincidem.")
+            return render(request, "cadastro.html", context)
+
+        if User.objects.filter(username=email).exists():
+            messages.error(request, "Já existe um usuário cadastrado com esse E-mail.")
+            return render(request, "cadastro.html", context)
+
+        if Perfil.objects.filter(cpf=cpf).exists():
+            messages.error(request, "Já existe um usuário cadastrado com esse CPF.")
+            return render(request, "cadastro.html", context)
+
+        try:
+            data_nascimento_obj = datetime.strptime(data_nascimento, "%Y-%m-%d").date()
+        except ValueError:
+            messages.error(request, "Data de nascimento inválida.")
+            return render(request, "cadastro.html", context)
+
+        try:
+            usuario = User.objects.create_user(username=email, email=email, password=senha)
+
+            if not hasattr(usuario, 'perfil'):
+                usuario.perfil = Perfil.objects.create(
+                    user=usuario,
+                    nome=nome,
+                    cpf=cpf,
+                    celular=celular,
+                    data_nascimento=data_nascimento_obj,
+                    tipo=tipo,
+                )
+                usuario.save()
+
+            messages.success(request, "Cadastro realizado com sucesso!")
+            return redirect("home")
+
+        except Exception as e:
+            print("Erro ao criar usuário ou perfil:", e)  # Mostra no terminal/log do Azure
+            messages.error(request, f"Ocorreu um erro interno ao cadastrar: {str(e)}")
+            return render(request, "cadastro.html", context)
+
+    return render(request, "cadastro.html")
