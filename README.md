@@ -30,6 +30,6 @@ Nosso diferencial está na transparência e na comunidade engajada, proporcionan
 
 ## Foto do diagrama de atividades do sistema:
 
-![](https://drive.google.com/file/d/1bP98SuXfr3wz2oCk8tz_TgZGUgtX_NHd/view?usp=sharing)
+![Diagrama de Atividades](https://drive.google.com/uc?export=view&id=1bP98SuXfr3wz2oCk8tz_TgZGUgtX_NHd)
 
 ## Relato programação em pares
