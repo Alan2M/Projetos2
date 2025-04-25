@@ -32,21 +32,24 @@
 
     .container {
       display: flex;
-      justify-content: center;
-      align-items: flex-start;
       min-height: calc(100vh - 60px);
       width: 100vw;
-      padding: 40px 20px;
       margin-top: 60px;
     }
 
     .left-section {
+      width: 65%;
+      padding: 40px;
+      background-color: #fff;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .form-box {
       width: 100%;
       max-width: 500px;
-      background-color: #fff;
-      padding: 40px;
-      border-radius: 12px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
     }
 
     .header {
@@ -55,18 +58,25 @@
     }
 
     .header .title {
+      margin-top: 80px;
       font-size: 20px;
       font-weight: 400;
       color: #000;
     }
 
     .header .logo-img {
-      margin-top: 10px;
-      max-width: 150px;
+      margin-top: -15px;
+      max-width: 400px;
       height: auto;
       display: block;
       margin-left: auto;
       margin-right: auto;
+    }
+
+    .progress-img {
+      width: 610px;
+      margin: 0 auto 30px;
+      display: block;
     }
 
     label {
@@ -151,10 +161,29 @@
     }
 
     .right-section {
-      display: none; 
+      width: 35%;
+      height: 100%;
+      background-color: white;
+    }
+
+    .right-section img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: right center;
+      display: block;
     }
 
     @media (max-width: 768px) {
+      .container {
+        flex-direction: column;
+      }
+
+      .left-section,
+      .right-section {
+        width: 100%;
+      }
+
       .left-section {
         padding: 20px;
       }
@@ -162,6 +191,10 @@
       .button-group {
         flex-direction: column;
         gap: 10px;
+      }
+
+      .right-section {
+        height: 200px;
       }
     }
   </style>
@@ -171,70 +204,78 @@
 
   <div class="container">
     <div class="left-section">
-      <div class="header">
-        <div class="title">BEM VINDO AO</div>
-        <img src="/static/solidreamslogo.png" alt="Logo Solidreams" class="logo-img" />
-      </div>
+      <div class="form-box">
+        <div class="header">
+          <div class="title">BEM VINDO AO</div>
+          <img src="{% static 'solidreamslogo.png' %}" alt="Logo Solidreams" class="logo-img" />
+          <img src="{% static 'barra_progresso1.png' %}" alt="Barra de progresso" class="progress-img" />
+        </div>
+        
 
-      {% if messages %}
-        {% for message in messages %}
-          {% if message.tags == 'error' %}
-            <div class="error-message">
-              {{ message }}
-            </div>
-          {% endif %}
-        {% endfor %}
-      {% endif %}
+        {% if messages %}
+          {% for message in messages %}
+            {% if message.tags == 'error' %}
+              <div class="error-message">
+                {{ message }}
+              </div>
+            {% endif %}
+          {% endfor %}
+        {% endif %}
 
-      <form method="POST" action="{% url 'processar_cadastro' %}">
-        {% csrf_token %}
-        
-        <label for="nome">Nome Completo</label>
-        <input type="text" id="nome" name="nome" placeholder="Seu nome completo" value="{{ request.POST.nome|default:'' }}" required />
-        
-        <label for="email">Email</label>
-        <input type="email" id="email" name="email" placeholder="Seu email" value="{{ request.POST.email|default:'' }}" required />
-        
-        <label for="cpf">CPF</label>
-        <input type="text" id="cpf" name="cpf" placeholder="Seu CPF" value="{{ request.POST.cpf|default:'' }}" required />
-        
-        <label for="celular">Celular</label>
-        <input type="tel" id="celular" name="celular" placeholder="(xx) xxxxx-xxxx" value="{{ request.POST.celular|default:'' }}" required />
-        
-        <label for="data-nascimento">Data de Nascimento</label>
-        <input type="date" id="data-nascimento" name="data-nascimento" value="{{ request.POST.data_nascimento|default:'' }}" required />
+        <form method="POST" action="{% url 'processar_cadastro' %}">
+          {% csrf_token %}
 
-        <label for="tipo">Tipo de Usuário</label>
+          <label for="nome">Nome Completo</label>
+          <input type="text" id="nome" name="nome" placeholder="Seu nome completo" value="{{ request.POST.nome|default:'' }}" required />
+          
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" placeholder="Seu email" value="{{ request.POST.email|default:'' }}" required />
+          
+          <label for="cpf">CPF</label>
+          <input type="text" id="cpf" name="cpf" placeholder="Seu CPF" value="{{ request.POST.cpf|default:'' }}" required />
+          
+          <label for="celular">Celular</label>
+          <input type="tel" id="celular" name="celular" placeholder="(xx) xxxxx-xxxx" value="{{ request.POST.celular|default:'' }}" required />
+          
+          <label for="data-nascimento">Data de Nascimento</label>
+          <input type="date" id="data-nascimento" name="data-nascimento" value="{{ request.POST.data_nascimento|default:'' }}" required />
+
+          <label for="tipo">Tipo de Usuário</label>
           <select id="tipo" name="tipo" required style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ccc; margin-bottom: 20px; font-size: 14px;">
             <option value="">Selecione</option>
             <option value="aluno" {% if request.POST.tipo == 'aluno' %}selected{% endif %}>Aluno</option>
             <option value="professor" {% if request.POST.tipo == 'professor' %}selected{% endif %}>Professor</option>
           </select>
-        
-        <label for="senha">Senha</label>
-        <div class="password-wrapper">
-          <input type="password" id="senha" name="senha" placeholder="Sua senha" required />
-          <button type="button" class="toggle-password" onclick="togglePassword('senha')">👁</button>
-        </div>
 
-        <label for="confirmar-senha">Confirmar Senha</label>
-        <div class="password-wrapper">
-          <input type="password" id="confirmar-senha" name="confirmar-senha" placeholder="Confirme sua senha" required />
-          <button type="button" class="toggle-password" onclick="togglePassword('confirmar-senha')">👁</button>
-        </div>
-        
-        <div class="button-group">
-          <button type="submit">Cadastrar</button>
-          <button type="button" class="cancel-button" onclick="window.location.href='/'">Cancelar</button>
-        </div>
-      </form>
+          <label for="senha">Senha</label>
+          <div class="password-wrapper">
+            <input type="password" id="senha" name="senha" placeholder="Sua senha" required />
+            <button type="button" class="toggle-password" onclick="togglePassword('senha')">👁</button>
+          </div>
 
-      <div class="bottom-text">
-        Já tem uma conta? <a href="#">Faça login</a>
+          <label for="confirmar-senha">Confirmar Senha</label>
+          <div class="password-wrapper">
+            <input type="password" id="confirmar-senha" name="confirmar-senha" placeholder="Confirme sua senha" required />
+            <button type="button" class="toggle-password" onclick="togglePassword('confirmar-senha')">👁</button>
+          </div>
+
+          <div class="button-group">
+            <button type="submit">Cadastrar</button>
+            <button type="button" class="cancel-button" onclick="window.location.href='/'">Cancelar</button>
+          </div>
+        </form>
+
+        <div class="bottom-text">
+          Já tem uma conta? <a href="#">Faça login</a>
+        </div>
       </div>
     </div>
-  </div>
 
+    <div class="right-section">
+      <img src="{% static 'maos.png' %}" alt="Mãos Solidreams">
+    </div>
+  </div>
+  
   <script>
     function togglePassword(id) {
       const input = document.getElementById(id);
