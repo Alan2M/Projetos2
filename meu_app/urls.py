@@ -8,6 +8,7 @@ urlpatterns = [
     path('processar_cadastro/', processar_cadastro, name="processar_cadastro"),
     path("login/", login_usuario, name="login"),
     path('logout/', logout_usuario, name='logout'),
-     path('alunos/', lista_alunos, name='lista_alunos'),
-    path('formulario/', views.formulario, name='formulario'),  
+    path('alunos/', lista_alunos, name='lista_alunos'),
+    path("formulario/", views.formulario_view, name="formulario"),
+    path('formulario/sucesso/', views.formulario_sucesso, name='formulario_sucesso'),
 ]

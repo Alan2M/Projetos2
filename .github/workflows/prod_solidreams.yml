@@ -39,7 +39,10 @@ jobs:
         with:
           name: python-app
           path: release.zip
+<<<<<<< HEAD
 
+=======
+>>>>>>> 7d4df57f1553477c09ec40459ea519bb2cfd116d
 
   deploy:
     runs-on: ubuntu-latest
