@@ -36,7 +36,7 @@ Nosso diferencial está na transparência e na comunidade engajada, proporcionan
 
 ![issue bug tracker](https://github.com/user-attachments/assets/72d13a89-f2c4-4d42-b5e2-a04faac3fd6f)
 
-##Screen cast prototipo de baixa fidelida:
+## Screen cast prototipo de baixa fidelida:
 - https://youtu.be/S5AndeEgzJY
 
 ## Relato programação em pares
