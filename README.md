@@ -20,13 +20,23 @@ Nosso diferencial está na transparência e na comunidade engajada, proporcionan
 
 # SR1
 
-## Link para o documento com as histórias 
+## Link para o documento com as histórias:
 
 - https://docs.google.com/document/d/1oT4kfSVIAITFrKpDRp6bidSKJT8-Jcoef1aCKxSsTvY/edit?usp=sharing
 
-## Link para o Figma
+## Link para o Figma:
 
 - https://www.figma.com/design/UjQQV7SAHB05uLB3FkJcEr/Untitled?node-id=38-33&t=YN0ni105O4d7HlMF-1
 
+## Foto do diagrama de atividades do sistema:
 
-## Relato programação em pares
+![Diagrama de Atividades](https://drive.google.com/uc?export=view&id=1bP98SuXfr3wz2oCk8tz_TgZGUgtX_NHd)
+
+## Issue Bug Tracker: 
+
+![issue bug tracker](https://github.com/user-attachments/assets/72d13a89-f2c4-4d42-b5e2-a04faac3fd6f)
+
+## Screencast prototipo de baixa fidelida:
+- https://youtu.be/S5AndeEgzJY
+
+## Relato programação em pares:
