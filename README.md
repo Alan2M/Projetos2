@@ -20,11 +20,11 @@ Nosso diferencial está na transparência e na comunidade engajada, proporcionan
 
 # SR1
 
-## Link para o documento com as histórias 
+## Link para o documento com as histórias:
 
 - https://docs.google.com/document/d/1oT4kfSVIAITFrKpDRp6bidSKJT8-Jcoef1aCKxSsTvY/edit?usp=sharing
 
-## Link para o Figma
+## Link para o Figma:
 
 - https://www.figma.com/design/UjQQV7SAHB05uLB3FkJcEr/Untitled?node-id=38-33&t=YN0ni105O4d7HlMF-1
 
@@ -39,4 +39,4 @@ Nosso diferencial está na transparência e na comunidade engajada, proporcionan
 ## Screen cast prototipo de baixa fidelida:
 - https://youtu.be/S5AndeEgzJY
 
-## Relato programação em pares
+## Relato programação em pares:
