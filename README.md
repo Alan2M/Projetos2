@@ -32,4 +32,9 @@ Nosso diferencial está na transparência e na comunidade engajada, proporcionan
 
 ![Diagrama de Atividades](https://drive.google.com/uc?export=view&id=1bP98SuXfr3wz2oCk8tz_TgZGUgtX_NHd)
 
+## Issue Bug Tracker: 
+
+![issue bug tracker](https://github.com/user-attachments/assets/72d13a89-f2c4-4d42-b5e2-a04faac3fd6f)
+
+
 ## Relato programação em pares
