@@ -28,5 +28,8 @@ Nosso diferencial está na transparência e na comunidade engajada, proporcionan
 
 - https://www.figma.com/design/UjQQV7SAHB05uLB3FkJcEr/Untitled?node-id=38-33&t=YN0ni105O4d7HlMF-1
 
+## Foto do diagrama de atividades do sistema:
+
+![](https://drive.google.com/file/d/1bP98SuXfr3wz2oCk8tz_TgZGUgtX_NHd/view?usp=sharing)
 
 ## Relato programação em pares
