@@ -39,7 +39,7 @@ Nosso diferencial está na transparência e na comunidade engajada, proporcionan
 ## Screencast do deploy:
 - https://youtu.be/sR3TRyzAGg8
 
-## Screencast prototipo de baixa fidelida:
+## Screencast prototipo de baixa fidelidade:
 - https://youtu.be/S5AndeEgzJY
 
 ## Relato programação em pares:
