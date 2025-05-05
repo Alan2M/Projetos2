@@ -111,11 +111,10 @@ def formulario(request):
         return redirect('login')  
     return render(request, 'formulario.html')
 
-def lista_alunos(request):
-    if not request.user.is_authenticated or request.user.perfil.tipo != 'professor':
-        messages.error(request, "Acesso restrito aos professores.")
-        return redirect('home')
+from django.contrib.auth.decorators import login_required
 
+@login_required
+def lista_alunos(request):
     form = FiltroAlunoForm(request.GET or None)
     alunos = Aluno.objects.all()
 
@@ -131,7 +130,6 @@ def lista_alunos(request):
 
     return render(request, 'Lista_alunos.html', {'form': form, 'alunos': alunos})
 
-@login_required
 def formulario_view(request):
     try:
         perfil = Perfil.objects.get(user=request.user)
