@@ -45,3 +45,4 @@ class FormularioMarcacao(models.Model):
 
     def __str__(self):
         return f'{self.usuario.username} - Score: {self.score}'
+        
