@@ -13,6 +13,8 @@ def home(request):
         'is_authenticated': request.user.is_authenticated
     })
 
+
+
 def cadastro(request):
     return render(request, 'cadastro.html')
 
