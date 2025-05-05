@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'whitenoise.runserver_nostatic',
     'meu_app',
+    'widget_tweaks',
 ]
 
 MIDDLEWARE = [
