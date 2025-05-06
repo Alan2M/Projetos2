@@ -107,7 +107,7 @@
             <ul class="navbar-nav ms-auto">
                 {% if user.is_authenticated %}
                     {% if user.perfil.tipo == 'professor' %}
-                        <li class="nav-item"><a class="nav-link" href="{% url 'painel_gestor' %}">Painel do Gestor</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'inicio_gestor' %}">Painel do Gestor</a></li>
                         <li class="nav-item"><a class="nav-link" href="{% url 'lista_alunos' %}">Filtrar Alunos</a></li>
                         {% else %}
                         <li class="nav-item"><a class="nav-link" href="{% url 'formulario' %}">Formulário</a></li>
