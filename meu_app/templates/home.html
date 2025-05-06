@@ -106,12 +106,16 @@
         <div class="collapse navbar-collapse" id="navbarContent">
             <ul class="navbar-nav ms-auto">
                 {% if user.is_authenticated %}
-                    <li class="nav-item"><a class="nav-link" href="{% url 'formulario' %}">Formulário</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'lista_alunos' %}">Lista de Alunos</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">Logout</a></li>
-                {% else %}
-                    <li class="nav-item"><a class="nav-link" href="{% url 'cadastro' %}">Cadastre-se</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Login</a></li>
+                    {% if user.perfil.tipo == 'professor' %}
+                        <li class="nav-item"><a class="nav-link" href="{% url 'painel_gestor' %}">Painel do Gestor</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'lista_alunos' %}">Filtrar Alunos</a></li>
+                        {% else %}
+                        <li class="nav-item"><a class="nav-link" href="{% url 'formulario' %}">Formulário</a></li>
+                    {% endif %}
+                        <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">Logout</a></li>
+                    {% else %}
+                        <li class="nav-item"><a class="nav-link" href="{% url 'cadastro' %}">Cadastre-se</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Login</a></li>
                 {% endif %}
             </ul>
         </div>
@@ -166,7 +170,6 @@
     <p>Transformando sonhos em realidade, um projeto de impacto social.</p>
     <a href="#about" class="cta-button">Saiba mais sobre o projeto</a>
 </section>
-
 
 
 <!-- Galeria Alternada -->

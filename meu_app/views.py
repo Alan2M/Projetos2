@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.models import User
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from datetime import datetime
 from .models import Perfil, Aluno, FormularioMarcacao
 from .forms import FiltroAlunoForm, AlunoForm, CriarAdministradorForm
@@ -74,6 +74,9 @@ def processar_cadastro(request):
 
     return render(request, "cadastro.html")
 
+def is_professor(user):
+    return user.is_authenticated and user.perfil.tipo == 'professor'
+
 def login_usuario(request):
     if request.method == "POST":
         email = request.POST.get("email")
@@ -98,6 +101,8 @@ def login_usuario(request):
 def logout_usuario(request):
     logout(request)
     return redirect('home')
+
+
 
 # ---------- FORMULÁRIOS E PERFIL ----------
 
@@ -161,7 +166,7 @@ def formulario_sucesso(request):
 
 # ---------- PAINEL E GESTÃO ----------
 
-@login_required
+@user_passes_test(is_professor)
 def painel_gestor(request):
     form = FiltroAlunoForm(request.GET or None)
     alunos = Aluno.objects.all()
@@ -178,7 +183,7 @@ def painel_gestor(request):
 
     return render(request, 'gestor.html', {'alunos': alunos, 'form': form})
 
-@login_required
+@user_passes_test(is_professor)
 def lista_alunos(request):
     form = FiltroAlunoForm(request.GET or None)
     perfis = Perfil.objects.filter(tipo='aluno').select_related('user')
