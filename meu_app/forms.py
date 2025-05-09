@@ -1,9 +1,40 @@
 from django import forms
 from django.contrib.auth.models import User
-from .models import Aluno, Curso, Entrevista
+from .models import Aluno, Curso, Entrevista, FormularioMarcacao
 from datetime import timedelta
 from django.utils import timezone
 
+# ---------------------------
+# Choices de período/turno
+# ---------------------------
+PERIODO_CHOICES = [
+    ('manha', 'Manhã'),
+    ('tarde', 'Tarde'),
+]
+
+# ---------------------------
+# Formulário de Inscrição (vulnerabilidade + curso/turno)
+# ---------------------------
+class FormularioMarcacaoForm(forms.ModelForm):
+    curso = forms.ModelChoiceField(
+        queryset=Curso.objects.all(),
+        label='Curso desejado',
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    turno = forms.ChoiceField(
+        choices=PERIODO_CHOICES,
+        widget=forms.RadioSelect,
+        label='Turno desejado'
+    )
+
+    class Meta:
+        model = FormularioMarcacao
+        fields = [
+            'pessoas_moram', 'casa', 'localizacao',
+            'escolaridade_pai', 'escolaridade_mae',
+            'renda_familiar', 'renda_mensal', 'trabalha',
+            'curso', 'turno'
+        ]
 
 # ---------------------------
 # Filtro de Alunos no Painel
@@ -12,7 +43,11 @@ class FiltroAlunoForm(forms.Form):
     nome = forms.CharField(required=False, label='Nome')
     email = forms.CharField(required=False, label='Email')
     cpf = forms.CharField(required=False, label='CPF')
-    curso = forms.ModelChoiceField(queryset=Curso.objects.none(), required=False, label='Curso')
+    curso = forms.ModelChoiceField(
+        queryset=Curso.objects.none(),
+        required=False,
+        label='Curso'
+    )
     data_inscricao = forms.DateField(
         required=False,
         label='Data de Inscrição',
@@ -30,6 +65,12 @@ class FiltroAlunoForm(forms.Form):
 # Formulário para Criar Aluno
 # ---------------------------
 class AlunoForm(forms.ModelForm):
+    preferencia_turno = forms.ChoiceField(
+        choices=PERIODO_CHOICES,
+        widget=forms.RadioSelect,
+        label='Turno preferido para entrevista'
+    )
+
     class Meta:
         model = Aluno
         fields = ['nome', 'email', 'curso', 'preferencia_turno']
@@ -37,7 +78,6 @@ class AlunoForm(forms.ModelForm):
             'nome': 'Nome do Aluno',
             'email': 'Email',
             'curso': 'Curso escolhido',
-            'preferencia_turno': 'Turno preferido para entrevista',
         }
 
 # ---------------------------
@@ -57,16 +97,18 @@ class CriarAdministradorForm(forms.ModelForm):
 # ---------------------------
 # Formulário de Agendamento
 # ---------------------------
-PERIODO_CHOICES = [
-    ('manha', 'Manhã'),
-    ('tarde', 'Tarde'),
-]
-
 class AgendamentoForm(forms.Form):
     curso = forms.ModelChoiceField(queryset=Curso.objects.all(), label="Curso")
     quantidade_alunos = forms.IntegerField(min_value=1, label="Qtd. de alunos")
-    periodo = forms.ChoiceField(choices=PERIODO_CHOICES, widget=forms.RadioSelect, label="Período")
-    dia_agendamento = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), label="Data")
+    periodo = forms.ChoiceField(
+        choices=PERIODO_CHOICES,
+        widget=forms.RadioSelect,
+        label="Período"
+    )
+    dia_agendamento = forms.DateField(
+        widget=forms.DateInput(attrs={'type': 'date'}),
+        label="Data"
+    )
 
 # ---------------------------
 # Formulário para editar Entrevistas
@@ -88,4 +130,6 @@ class EntrevistaForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if not self.fields['data_hora'].initial:
-            self.fields['data_hora'].initial = (timezone.now() + timedelta(hours=1)).strftime('%Y-%m-%dT%H:%M')
+            self.fields['data_hora'].initial = (
+                timezone.now() + timedelta(hours=1)
+            ).strftime('%Y-%m-%dT%H:%M')

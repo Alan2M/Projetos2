@@ -1,0 +1,46 @@
+{% extends 'base_gestor.html' %}
+{% load static %}
+
+{% block title %}Entrevistas – {{ curso.nome }}{% endblock %}
+
+{% block content %}
+  <h2>Entrevistas do curso: {{ curso.nome }}</h2>
+
+  <div class="mb-3">
+    <a href="{% url 'gestor' %}" class="btn btn-secondary btn-sm">
+      ← Voltar ao Painel
+    </a>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-striped table-hover">
+      <thead>
+        <tr>
+          <th>Aluno</th>
+          <th>Data e Hora</th>
+          <th>Local</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for ent in entrevistas %}
+        <tr>
+          <td>{{ ent.aluno.nome }}</td>
+          <td>{{ ent.data_hora|date:"d/m/Y H:i" }}</td>
+          <td>{{ ent.local }}</td>
+          <td>
+            <a href="{% url 'editar_entrevista' ent.id %}" class="btn btn-success btn-sm me-1">
+              <i class="fas fa-edit"></i>
+            </a>
+            <a href="{% url 'excluir_entrevista' ent.id %}" class="btn btn-danger btn-sm">
+              <i class="fas fa-trash"></i>
+            </a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4" class="text-center">Nenhuma entrevista agendada.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}

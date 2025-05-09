@@ -1,201 +1,79 @@
+{% extends 'base_gestor.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-  <meta charset="UTF-8">
-  <title>Painel do Gestor</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: Arial, sans-serif; background: #f7f7f7; }
-    header {
-      background: #fff;
-      padding: 10px 20px;
-      display: flex;
-      align-items: center;
-      border-bottom: 2px solid #ccc;
-    }
-    header img {
-      height: 40px;
-      margin-right: 10px;
-    }
-    .main {
-      display: flex;
-      height: calc(100vh - 80px);
-    }
-    .sidebar {
-      width: 70px;
-      background: #d9d9d9;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 10px 0;
-    }
-    .sidebar a {
-      text-decoration: none;
-      color: inherit;
-    }
-    .sidebar i {
-      font-size: 22px;
-      margin: 20px 0;
-      cursor: pointer;
-    }
-    .content {
-      flex: 1;
-      padding: 30px;
-      overflow-y: auto;
-    }
-    .filter-box {
-      background: #fff;
-      padding: 20px;
-      margin-bottom: 30px;
-      border-radius: 10px;
-      box-shadow: 0 0 5px rgba(0,0,0,0.1);
-    }
-    .filter-box h3 {
-      margin-bottom: 15px;
-      color: #333;
-    }
-    .filter-box input, .filter-box select {
-      width: 100%;
-      padding: 8px;
-      margin-bottom: 10px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-    }
-    .filter-actions {
-      display: flex;
-      gap: 10px;
-    }
-    .btn {
-      padding: 8px 16px;
-      border: none;
-      border-radius: 5px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    .btn-primary { background: #007bff; color: white; }
-    .btn-primary:hover { background: #0069d9; }
-    .btn-secondary { background: #6c757d; color: white; }
-    .btn-secondary:hover { background: #5a6268; }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background: white;
-      border-radius: 10px;
-      overflow: hidden;
-      box-shadow: 0 0 5px rgba(0,0,0,0.1);
-    }
-    th, td {
-      border-bottom: 1px solid #ddd;
-      padding: 12px 15px;
-    }
-    th {
-      background-color: #f0f0f0;
-      text-align: left;
-    }
-    tr:hover {
-      background-color: #f9f9f9;
-    }
-    footer {
-      background: #999;
-      padding: 20px;
-      text-align: center;
-      font-weight: bold;
-      color: #fff;
-    }
-  </style>
-</head>
-<body>
-  <header>
-    <img src="{% static 'logo.png' %}" alt="Logo">
-    <span>Transformar vidas é o que nos move</span>
-  </header>
+{% block title %}Painel do Gestor – Alunos{% endblock %}
 
-  <div class="main">
-    <div class="sidebar">
-      <a href="{% url 'inicio_gestor' %}"><i class="fas fa-user" title="Página Inicial do Gestor"></i></a>
-      <a href="{% url 'painel_gestor' %}"><i class="fas fa-table" title="Lista de Alunos"></i></a>
-      <a href="{% url 'lista_alunos' %}"><i class="fas fa-filter" title="Filtrar Alunos"></i></a>
-      <a href="#"><i class="fas fa-calendar-alt" title="Calendário"></i></a>
-      <a href="#"><i class="fas fa-bell" title="Notificações"></i></a>
-      <a href="{% url 'cadastrar_aluno' %}"><i class="fas fa-plus" title="Cadastrar Aluno"></i></a>
-      <a href="{% url 'logout' %}"><i class="fas fa-sign-out-alt" title="Sair"></i></a>
-    </div>
+{% block content %}
+  <h2>Alunos Cadastrados</h2>
 
-    <div class="content">
-      <h2>Alunos Cadastrados</h2>
-
-      <div class="filter-box">
-        <h3>Filtrar Alunos</h3>
-        <form method="get">
-          <input type="text" name="nome" placeholder="Nome" value="{{ request.GET.nome }}">
-          <input type="email" name="email" placeholder="Email" value="{{ request.GET.email }}">
-
-          <select name="curso">
-            <option value="">Todos os cursos</option>
-            {% for c in cursos %}
-              <option value="{{ c.id }}" {% if request.GET.curso == c.id|stringformat:"s" %}selected{% endif %}>{{ c.nome }}</option>
-            {% endfor %}
-          </select>
-
-          <input type="date" name="data_inscricao" placeholder="Data de inscrição" value="{{ request.GET.data_inscricao }}">
-
-          <div class="filter-actions">
-            <button type="submit" class="btn btn-primary">Filtrar</button>
-            <a href="{% url 'painel_gestor' %}" class="btn btn-secondary">Limpar Filtros</a>
-          </div>
-        </form>
+  <!-- Filtro de Alunos -->
+  <div class="filter-box" id="filtrar-alunos">
+    <h3>Filtrar Alunos</h3>
+    <form method="get" class="row g-2">
+      <div class="col-md-3">
+        <input type="text" name="nome" placeholder="Nome" value="{{ request.GET.nome }}" class="form-control">
       </div>
-
-      <table>
-        <thead>
-          <tr>
-            <th>Aluno</th>
-            <th>Curso</th>
-            <th>Data de inscrição</th>
-            <th>Data da entrevista</th>
-            <th>Ações</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for aluno in alunos %}
-          <tr>
-            <td>{{ aluno.nome }}</td>
-            <td>{{ aluno.curso.nome }}</td>
-            <td>{{ aluno.data_inscricao|date:"d/m/Y" }}</td>
-            <td>
-              {% if aluno.entrevista %}
-                {{ aluno.entrevista.data_hora|date:"d/m/Y H:i" }}
-              {% else %}
-                <span class="text-muted">Não marcada</span>
-              {% endif %}
-            </td>
-            <td>
-              {% if not aluno.entrevista %}
-                <a href="{% url 'agendar_entrevista' %}?aluno_id={{ aluno.id }}" class="btn btn-sm btn-outline-primary">
-                  Agendar
-                </a>
-              {% else %}
-                <a href="{% url 'responder_entrevista' aluno.entrevista.id %}" class="btn btn-sm btn-success">
-                  Preencher
-                </a>
-              {% endif %}
-            </td>
-          </tr>
-          {% empty %}
-          <tr>
-            <td colspan="5">Nenhum aluno encontrado.</td>
-          </tr>
+      <div class="col-md-3">
+        <input type="email" name="email" placeholder="Email" value="{{ request.GET.email }}" class="form-control">
+      </div>
+      <div class="col-md-3">
+        <select name="curso" class="form-select">
+          <option value="">Todos os cursos</option>
+          {% for c in cursos %}
+            <option value="{{ c.id }}" {% if request.GET.curso == c.id|stringformat:"s" %}selected{% endif %}>{{ c.nome }}</option>
           {% endfor %}
-        </tbody>
-      </table>
-    </div>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <input type="date" name="data_inscricao" value="{{ request.GET.data_inscricao }}" class="form-control">
+      </div>
+      <div class="col-md-1 d-grid">
+        <button type="submit" class="btn btn-primary">Filtrar</button>
+      </div>
+      <div class="col-md-1 d-grid">
+        <a href="{% url 'painel_gestor' %}" class="btn btn-secondary">Limpar</a>
+      </div>
+    </form>
   </div>
 
-  <footer>
-    Informações de contato
-  </footer>
-</body>
-</html>
+  <!-- Tabela de Alunos -->
+  <div class="table-responsive mt-4">
+    <table class="table table-striped table-hover">
+      <thead>
+        <tr>
+          <th>Aluno</th>
+          <th>Curso (Turno)</th>
+          <th>Data de inscrição</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for aluno in alunos %}
+        <tr>
+          <td>{{ aluno.nome }}</td>
+          <td>
+            {{ aluno.curso.nome }}
+            {% if aluno.preferencia_turno %}
+              ({{ aluno.get_preferencia_turno_display }})
+            {% endif %}
+          </td>
+          <td>{{ aluno.data_inscricao|date:"d/m/Y" }}</td>
+          <td>
+            {% if aluno.data_entrevista %}
+              <span class="badge bg-success">Concluído</span>
+            {% else %}
+              <a href="{% url 'agendar_entrevista' %}?aluno_id={{ aluno.id }}" class="btn btn-outline-primary btn-sm">
+                <i class="fas fa-calendar-plus me-1"></i>Agendar
+              </a>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="4" class="text-center">Nenhum aluno encontrado.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}

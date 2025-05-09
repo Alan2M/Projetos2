@@ -3,16 +3,37 @@ from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required, user_passes_test
-from datetime import datetime
-from .models import Perfil, Aluno, FormularioMarcacao
-from .forms import FiltroAlunoForm, AlunoForm, CriarAdministradorForm
 from django.core.mail import send_mail
 from django.conf import settings
-from .forms import AgendamentoForm
-from .models import Aluno, Entrevista
-from datetime import datetime, timedelta
-from .forms import EntrevistaForm
-from datetime import time
+from django import forms
+from django.forms import HiddenInput
+
+
+from datetime import datetime, date, time, timedelta
+import calendar
+
+from .models import (
+    Perfil,
+    Aluno,
+    FormularioMarcacao,
+    Curso,
+    Entrevista
+)
+from .forms import (
+    FiltroAlunoForm,
+    AlunoForm,
+    CriarAdministradorForm,
+    AgendamentoForm,
+    EntrevistaForm
+)
+
+
+def is_professor(user):
+    return (
+        user.is_authenticated
+        and hasattr(user, 'perfil')
+        and user.perfil.tipo == 'professor'
+    )
 
 
 # ---------- AUTENTICAÇÃO ----------
@@ -24,66 +45,63 @@ def home(request):
     })
 
 
-
 def cadastro(request):
     return render(request, 'cadastro.html')
 
+
 def processar_cadastro(request):
-    if request.method == "POST":
-        email = request.POST.get("email")
-        senha = request.POST.get("senha")
-        confirmar_senha = request.POST.get("confirmar-senha")
-        cpf = request.POST.get("cpf")
-        nome = request.POST.get("nome")
-        celular = request.POST.get("celular")
-        data_nascimento = request.POST.get("data-nascimento")
-        tipo = request.POST.get("tipo")
+    if request.method != "POST":
+        return render(request, "cadastro.html")
 
-        context = {
-            'nome': nome, 'email': email, 'cpf': cpf,
-            'celular': celular, 'data_nascimento': data_nascimento,
-            'tipo': tipo,
-        }
+    email = request.POST.get("email")
+    senha = request.POST.get("senha")
+    confirmar_senha = request.POST.get("confirmar-senha")
+    cpf = request.POST.get("cpf")
+    nome = request.POST.get("nome")
+    celular = request.POST.get("celular")
+    data_nascimento = request.POST.get("data-nascimento")
+    tipo = request.POST.get("tipo")
 
-        if senha != confirmar_senha:
-            messages.error(request, "As senhas não coincidem.")
-            return render(request, "cadastro.html", context)
+    context = {
+        'nome': nome, 'email': email, 'cpf': cpf,
+        'celular': celular, 'data_nascimento': data_nascimento,
+        'tipo': tipo,
+    }
 
-        if User.objects.filter(username=email).exists():
-            messages.error(request, "Já existe um usuário cadastrado com esse E-mail.")
-            return render(request, "cadastro.html", context)
+    if senha != confirmar_senha:
+        messages.error(request, "As senhas não coincidem.")
+        return render(request, "cadastro.html", context)
 
-        if Perfil.objects.filter(cpf=cpf).exists():
-            messages.error(request, "Já existe um usuário cadastrado com esse CPF.")
-            return render(request, "cadastro.html", context)
+    if User.objects.filter(username=email).exists():
+        messages.error(request, "Já existe um usuário cadastrado com esse E-mail.")
+        return render(request, "cadastro.html", context)
 
-        try:
-            data_nascimento_obj = datetime.strptime(data_nascimento, "%Y-%m-%d").date()
-        except ValueError:
-            messages.error(request, "Data de nascimento inválida.")
-            return render(request, "cadastro.html", context)
+    if Perfil.objects.filter(cpf=cpf).exists():
+        messages.error(request, "Já existe um usuário cadastrado com esse CPF.")
+        return render(request, "cadastro.html", context)
 
-        try:
-            usuario = User.objects.create_user(username=email, email=email, password=senha)
-            Perfil.objects.create(
-                user=usuario,
-                nome=nome,
-                cpf=cpf,
-                celular=celular,
-                data_nascimento=data_nascimento_obj,
-                tipo=tipo,
-            )
-            messages.success(request, "Cadastro realizado com sucesso!")
-            return redirect("home")
+    try:
+        data_obj = datetime.strptime(data_nascimento, "%Y-%m-%d").date()
+    except ValueError:
+        messages.error(request, "Data de nascimento inválida.")
+        return render(request, "cadastro.html", context)
 
-        except Exception as e:
-            messages.error(request, f"Erro ao cadastrar: {str(e)}")
-            return render(request, "cadastro.html", context)
+    try:
+        usuario = User.objects.create_user(username=email, email=email, password=senha)
+        Perfil.objects.create(
+            user=usuario,
+            nome=nome,
+            cpf=cpf,
+            celular=celular,
+            data_nascimento=data_obj,
+            tipo=tipo,
+        )
+        messages.success(request, "Cadastro realizado com sucesso!")
+        return redirect("home")
+    except Exception as e:
+        messages.error(request, f"Erro ao cadastrar: {e}")
+        return render(request, "cadastro.html", context)
 
-    return render(request, "cadastro.html")
-
-def is_professor(user):
-    return user.is_authenticated and user.perfil.tipo == 'professor'
 
 def login_usuario(request):
     if request.method == "POST":
@@ -92,42 +110,36 @@ def login_usuario(request):
         tipo = request.POST.get("tipo")
 
         user = User.objects.filter(username=email).first()
-
         if user and user.check_password(senha):
             perfil = getattr(user, 'perfil', None)
             if perfil and perfil.tipo == tipo:
                 login(request, user)
                 messages.success(request, "Login realizado com sucesso!")
                 return redirect("inicio_gestor") if tipo == 'professor' else redirect("home")
-            else:
-                messages.error(request, "Tipo de login inválido para esse usuário.")
+            messages.error(request, "Tipo de login inválido para esse usuário.")
         else:
             messages.error(request, "Email ou senha incorretos!")
 
-    return render(request, "login.html", {'email': request.POST.get('email')})
+    return render(request, "login.html", {
+        'email': request.POST.get('email', '')
+    })
+
 
 def logout_usuario(request):
     logout(request)
     return redirect('home')
 
 
-
 # ---------- FORMULÁRIOS E PERFIL ----------
-
-@login_required
-def formulario(request):
-    if not request.user.is_authenticated:
-        messages.error(request, "Você precisa estar logado para acessar o formulário.")
-        return redirect('login')
-    return render(request, 'formulario.html')
 
 @login_required
 def formulario_view(request):
     perfil, _ = Perfil.objects.get_or_create(user=request.user)
-
     if perfil.score_vulnerabilidade > 0:
         formulario = FormularioMarcacao.objects.filter(usuario=request.user).first()
-        return render(request, "formulario_sucesso.html", {"formulario": formulario})
+        return render(request, "formulario_sucesso.html", {
+            "formulario": formulario
+        })
 
     if request.method == "POST":
         campos = [
@@ -136,30 +148,29 @@ def formulario_view(request):
             "renda_familiar", "renda_mensal", "trabalha"
         ]
         respostas = {campo: request.POST.get(campo) for campo in campos}
-        campos_vazios = [campo for campo, valor in respostas.items() if not valor]
-
-        if campos_vazios:
+        if any(not v for v in respostas.values()):
             messages.error(request, "Por favor, preencha todas as respostas.")
             return render(request, "formulario.html", {"respostas": respostas})
 
-        def calcular_score(r):
-            score = 0
-            if r["pessoas_moram"] == "Mais de dez": score += 3
-            elif r["pessoas_moram"] == "Oito a dez": score += 2
-            elif r["pessoas_moram"] == "Quatro a sete": score += 1
-            if r["casa"] in ["Cedida", "Outros"]: score += 2
-            if r["localizacao"] in ["Zona rural", "Comunidade indígena", "Comunidade quilombola"]: score += 2
-            if r["escolaridade_pai"] in ["Não estudou", "Não sei"]: score += 1
-            if r["escolaridade_mae"] in ["Não estudou", "Não sei"]: score += 1
-            if r["renda_familiar"] == "Nenhuma renda": score += 4
-            elif r["renda_familiar"] == "Até 1 salário mínimo": score += 3
-            elif r["renda_familiar"] == "De 1 a 3 salários mínimos": score += 2
-            if r["renda_mensal"] == "Nenhuma renda": score += 2
-            elif r["renda_mensal"] == "Até 1 salário mínimo": score += 1
-            if r["trabalha"] == "Não": score += 1
-            return score
+        # Cálculo de score
+        def calc(r):
+            s = 0
+            if r["pessoas_moram"] == "Mais de dez": s += 3
+            elif r["pessoas_moram"] == "Oito a dez": s += 2
+            elif r["pessoas_moram"] == "Quatro a sete": s += 1
+            if r["casa"] in ["Cedida", "Outros"]: s += 2
+            if r["localizacao"] in ["Zona rural", "Comunidade indígena", "Comunidade quilombola"]: s += 2
+            if r["escolaridade_pai"] in ["Não estudou", "Não sei"]: s += 1
+            if r["escolaridade_mae"] in ["Não estudou", "Não sei"]: s += 1
+            if r["renda_familiar"] == "Nenhuma renda": s += 4
+            elif r["renda_familiar"] == "Até 1 salário mínimo": s += 3
+            elif r["renda_familiar"] == "De 1 a 3 salários mínimos": s += 2
+            if r["renda_mensal"] == "Nenhuma renda": s += 2
+            elif r["renda_mensal"] == "Até 1 salário mínimo": s += 1
+            if r["trabalha"] == "Não": s += 1
+            return s
 
-        score = calcular_score(respostas)
+        score = calc(respostas)
         FormularioMarcacao.objects.create(usuario=request.user, score=score, **respostas)
         perfil.score_vulnerabilidade = score
         perfil.save()
@@ -168,22 +179,19 @@ def formulario_view(request):
 
     return render(request, "formulario.html")
 
+
 @login_required
 def formulario_sucesso(request):
     return render(request, "formulario_sucesso.html")
 
+
 # ---------- PAINEL E GESTÃO ----------
 
-<<<<<<< Updated upstream
-@user_passes_test(is_professor)
-=======
-from .models import Curso 
 @login_required
->>>>>>> Stashed changes
+@user_passes_test(is_professor)
 def painel_gestor(request):
     form = FiltroAlunoForm(request.GET or None)
     alunos = Aluno.objects.all()
-
     if form.is_valid():
         if form.cleaned_data.get('nome'):
             alunos = alunos.filter(nome__icontains=form.cleaned_data['nome'])
@@ -193,35 +201,28 @@ def painel_gestor(request):
             alunos = alunos.filter(data_inscricao__date=form.cleaned_data['data_inscricao'])
         if form.cleaned_data.get('curso'):
             alunos = alunos.filter(curso=form.cleaned_data['curso'])
-
     return render(request, 'gestor.html', {
         'alunos': alunos,
         'form': form,
-        'cursos': Curso.objects.all(),  
+        'cursos': Curso.objects.all(),
     })
 
 
+@login_required
 @user_passes_test(is_professor)
 def lista_alunos(request):
     form = FiltroAlunoForm(request.GET or None)
     perfis = Perfil.objects.filter(tipo='aluno').select_related('user')
-    
     if form.is_valid():
-        nome = form.cleaned_data.get('nome')
-        email = form.cleaned_data.get('email')
-        cpf = form.cleaned_data.get('cpf')
-        data_inscricao = form.cleaned_data.get('data_inscricao')
+        if form.cleaned_data.get('nome'):
+            perfis = perfis.filter(nome__icontains=form.cleaned_data['nome'])
+        if form.cleaned_data.get('email'):
+            perfis = perfis.filter(user__email__icontains=form.cleaned_data['email'])
+        if form.cleaned_data.get('cpf'):
+            perfis = perfis.filter(cpf__icontains=form.cleaned_data['cpf'])
+        if form.cleaned_data.get('data_inscricao'):
+            perfis = perfis.filter(user__date_joined__date=form.cleaned_data['data_inscricao'])
 
-        if nome:
-            perfis = perfis.filter(nome__icontains=nome)
-        if email:
-            perfis = perfis.filter(user__email__icontains=email)
-        if cpf:
-            perfis = perfis.filter(cpf__icontains=cpf)
-        if data_inscricao:
-            perfis = perfis.filter(user__date_joined__date=data_inscricao)
-
-    # Ordenação por score
     ordenar_score = request.GET.get('ordenar_score')
     if ordenar_score == 'asc':
         perfis = perfis.order_by('score_vulnerabilidade')
@@ -233,24 +234,23 @@ def lista_alunos(request):
         'alunos': perfis
     })
 
+
 @login_required
+@user_passes_test(is_professor)
 def cadastrar_aluno(request):
     nome = request.GET.get('nome')
     email = request.GET.get('email')
     curso_nome = request.GET.get('curso')
 
-    dados_iniciais = {
-        'nome': nome or '',
-        'email': email or '',
-    }
-
+    # Preenchimento inicial do form
+    iniciais = {'nome': nome or '', 'email': email or ''}
     if curso_nome:
         try:
-            curso = Curso.objects.get(nome=curso_nome)
-            dados_iniciais['curso'] = curso
+            iniciais['curso'] = Curso.objects.get(nome=curso_nome)
         except Curso.DoesNotExist:
             pass
 
+    # Busca perfil existente para copiar CPF
     perfil = None
     if nome and email:
         perfil = Perfil.objects.filter(nome=nome, user__email=email).first()
@@ -258,26 +258,33 @@ def cadastrar_aluno(request):
     if request.method == 'POST':
         form = AlunoForm(request.POST)
         if form.is_valid():
-            email = form.cleaned_data['email']
-
-            if Aluno.objects.filter(email=email).exists():
+            # Já existe?
+            if Aluno.objects.filter(email=form.cleaned_data['email']).exists():
                 messages.error(request, "Já existe um aluno cadastrado com esse e-mail.")
             else:
-                form.save()
-
+                # Salva commit=False para podermos inserir o CPF
+                aluno = form.save(commit=False)
                 if perfil:
-                    user = perfil.user
+                    aluno.cpf = perfil.cpf
+                aluno.save()
+
+                # Remove o perfil antigo se existir
+                if perfil:
+                    perfil.user.delete()
                     perfil.delete()
-                    user.delete()
 
                 messages.success(request, "Aluno cadastrado com sucesso!")
                 return redirect('painel_gestor')
     else:
-        form = AlunoForm(initial=dados_iniciais)
+        form = AlunoForm(initial=iniciais)
 
-    return render(request, 'cadastrar_aluno.html', {'form': form, 'perfil': perfil})
+    return render(request, 'cadastrar_aluno.html', {
+        'form': form,
+        'perfil': perfil
+    })
 
 @login_required
+@user_passes_test(is_professor)
 def inicio_gestor(request):
     total_alunos = Aluno.objects.count()
     total_formularios = FormularioMarcacao.objects.count()
@@ -303,29 +310,26 @@ def inicio_gestor(request):
         'form': form
     })
 
-from django.shortcuts import render
-from .models import Aluno
-from datetime import date
-
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
-from datetime import date, datetime, timedelta
-import calendar
 
 @login_required
+@user_passes_test(is_professor)
 def calendario_entrevistas(request):
     hoje = date.today()
     mes = int(request.GET.get('mes', hoje.month))
     ano = int(request.GET.get('ano', hoje.year))
 
-    cal = calendar.Calendar(firstweekday=6)  # domingo primeiro
+    cal = calendar.Calendar(firstweekday=6)
     semanas = cal.monthdatescalendar(ano, mes)
 
-    # Exemplo de eventos fictícios (substitua por dados reais do banco)
-    eventos = {
-        '2025-01-17': ['Entrevista com João'],
-        '2025-01-23': ['Entrevista com Maria'],
-    }
+    entrevistas_mes = Entrevista.objects.filter(
+        data_hora__year=ano, data_hora__month=mes
+    )
+    eventos = {}
+    for e in entrevistas_mes:
+        chave = e.data_hora.strftime('%Y-%m-%d')
+        eventos.setdefault(chave, []).append(
+            f"{e.aluno.nome} - {e.data_hora.strftime('%H:%M')}"
+        )
 
     contexto = {
         'ano': ano,
@@ -333,13 +337,22 @@ def calendario_entrevistas(request):
         'semanas': semanas,
         'eventos': eventos,
         'nome_mes': calendar.month_name[mes],
-        'anterior': {'mes': mes - 1 or 12, 'ano': ano - 1 if mes == 1 else ano},
-        'proximo': {'mes': mes + 1 if mes < 12 else 1, 'ano': ano + 1 if mes == 12 else ano},
+        'anterior': {
+            'mes': mes - 1 or 12,
+            'ano': ano - 1 if mes == 1 else ano
+        },
+        'proximo': {
+            'mes': mes + 1 if mes < 12 else 1,
+            'ano': ano + 1 if mes == 12 else ano
+        }
     }
 
     return render(request, 'calendario.html', contexto)
 
-def agendar_entrevistas(request):
+
+@login_required
+@user_passes_test(is_professor)
+def agendar_vagas(request):
     if request.method == 'POST':
         form = AgendamentoForm(request.POST)
         if form.is_valid():
@@ -348,112 +361,107 @@ def agendar_entrevistas(request):
             periodo = form.cleaned_data['periodo']
             dia = form.cleaned_data['dia_agendamento']
 
-            # Horários fixos com base no período
             if periodo == 'manha':
-                hora_inicial = time(hour=8)
-                hora_final = time(hour=11)
-            else:  # tarde
-                hora_inicial = time(hour=13)
-                hora_final = time(hour=16)
+                inicio = time(hour=8); fim = time(hour=11)
+            else:
+                inicio = time(hour=13); fim = time(hour=16)
 
-            # Gera lista de horários a cada 30 min
-            horarios = []
-            atual = datetime.combine(dia, hora_inicial)
-            fim = datetime.combine(dia, hora_final)
-            while atual <= fim and len(horarios) < qtd:
+            horarios, atual = [], datetime.combine(dia, inicio)
+            while atual <= datetime.combine(dia, fim) and len(horarios) < qtd:
                 horarios.append(atual)
                 atual += timedelta(minutes=30)
 
-            # Pega os alunos com maior score
-            alunos = Aluno.objects.filter(curso=curso).order_by('-score')[:len(horarios)]
+            alunos = Aluno.objects.filter(curso=curso).order_by('-perfil__score_vulnerabilidade')[:len(horarios)]
 
-            for aluno, horario in zip(alunos, horarios):
-                entrevista = Entrevista.objects.create(
+            for aluno, dt in zip(alunos, horarios):
+                Entrevista.objects.create(
                     aluno=aluno,
                     curso=curso,
-                    data_hora=horario,
-                    local="R. Alcântara, 170 - Coqueiral, Recife - PE, 50791-560"
+                    data_hora=dt,
+                    local="R. Alcântara, 170 - Coqueiral, Recife - PE"
                 )
-
-                aluno.data_entrevista = horario
+                aluno.data_entrevista = dt
                 aluno.save()
 
                 send_mail(
                     subject='Entrevista Agendada',
-                    message=f"""
-Olá {aluno.nome},
-
-Você foi selecionado para uma entrevista do curso "{curso.nome}".
-
-🗓 Data: {horario.strftime('%d/%m/%Y')}
-🕒 Hora: {horario.strftime('%H:%M')}
-📍 Local: R. Alcântara, 170 - Coqueiral, Recife - PE, 50791-560
-
-Compareça com 10 minutos de antecedência. Boa sorte!
-
-Atenciosamente,
-Equipe de Seleção
-""",
+                    message=(
+                        f"Olá {aluno.nome},\n\n"
+                        f"Entrevista do curso \"{curso.nome}\" em {dt.strftime('%d/%m/%Y %H:%M')} "
+                        "no endereço acima.\n\nBoa sorte!"
+                    ),
                     from_email=settings.DEFAULT_FROM_EMAIL,
                     recipient_list=[aluno.email],
                     fail_silently=False
                 )
-
             return redirect('sucesso_agendamento')
     else:
         form = AgendamentoForm()
 
-    return render(request, 'agendar_entrevistas.html', {'form': form})
+    return render(request, 'agendar_vagas.html', {'form': form})
 
-from .models import Entrevista
 
 @login_required
+@user_passes_test(is_professor)
 def lista_entrevistas_por_dia(request):
     data_str = request.GET.get('data')
     entrevistas = []
-
     if data_str:
         try:
-            data = datetime.strptime(data_str, '%Y-%m-%d').date()
-            entrevistas = Entrevista.objects.filter(data_hora__date=data)
+            d = datetime.strptime(data_str, '%Y-%m-%d').date()
+            entrevistas = Entrevista.objects.filter(data_hora__date=d)
         except ValueError:
             messages.error(request, "Data inválida.")
-
     return render(request, 'entrevistas_por_dia.html', {
         'data': data_str,
         'entrevistas': entrevistas
     })
 
-eventos = {}
-for entrevista in Entrevista.objects.all():
-    data_str = entrevista.data_hora.strftime('%Y-%m-%d')
-    eventos.setdefault(data_str, []).append(f"{entrevista.aluno.nome} - {entrevista.data_hora.strftime('%H:%M')}")
 
 @login_required
+@user_passes_test(is_professor)
 def editar_entrevista(request, pk):
     entrevista = get_object_or_404(Entrevista, pk=pk)
+
     if request.method == 'POST':
         form = EntrevistaForm(request.POST, instance=entrevista)
         if form.is_valid():
-            form.save()
+            # salva apenas data_hora e local, mantém aluno e curso originais
+            e = form.save(commit=False)
+            e.aluno  = entrevista.aluno
+            e.curso  = entrevista.curso
+            e.save()
             messages.success(request, "Entrevista atualizada com sucesso!")
-            return redirect('lista_entrevistas_por_dia')  # você pode passar ?data=... de volta se quiser
+            return redirect('lista_entrevistas_por_dia')
     else:
         form = EntrevistaForm(instance=entrevista)
-    return render(request, 'editar_entrevista.html', {'form': form})
+        # remove dos inputs (eles permanecem no instance, mas não aparecem)
+        form.fields['aluno'].widget  = forms.HiddenInput()
+        form.fields['curso'].widget  = forms.HiddenInput()
+
+    return render(request, 'editar_entrevista.html', {
+        'form': form,
+        'entrevista': entrevista,
+    })
+
 
 @login_required
+@user_passes_test(is_professor)
 def excluir_entrevista(request, pk):
     entrevista = get_object_or_404(Entrevista, pk=pk)
     entrevista.delete()
     messages.success(request, "Entrevista excluída com sucesso!")
     return redirect('calendario_entrevistas')
 
+
 @login_required
+@user_passes_test(is_professor)
 def sucesso_agendamento(request):
     return render(request, 'sucesso.html')
 
+
 @login_required
+@user_passes_test(is_professor)
 def agendar_entrevista_individual(request):
     aluno_id = request.GET.get('aluno_id')
     aluno = get_object_or_404(Aluno, id=aluno_id) if aluno_id else None
@@ -469,7 +477,32 @@ def agendar_entrevista_individual(request):
     else:
         form = EntrevistaForm(initial={'aluno': aluno})
 
-    return render(request, 'agendar_entrevistas.html', {
+    return render(request, 'agendar_entrevista.html', {
         'form': form,
         'aluno_selecionado': aluno
+    })
+
+@login_required
+@user_passes_test(is_professor)
+def lista_entrevistas_por_curso(request, curso_id):
+    from django.shortcuts import get_object_or_404
+    curso = get_object_or_404(Curso, pk=curso_id)
+    entrevistas = Entrevista.objects.filter(curso=curso)
+    return render(request, 'entrevistas_por_curso.html', {
+        'curso': curso,
+        'entrevistas': entrevistas
+    })
+
+@login_required
+@user_passes_test(is_professor)
+def todas_entrevistas(request):
+    cursos = Curso.objects.all().order_by('nome')
+    curso_id = request.GET.get('curso')
+    entrevistas = Entrevista.objects.all().order_by('data_hora')
+    if curso_id:
+        entrevistas = entrevistas.filter(curso__id=curso_id)
+    return render(request, 'todas_entrevistas.html', {
+        'cursos': cursos,
+        'entrevistas': entrevistas,
+        'curso_selecionado': int(curso_id) if curso_id else None,
     })

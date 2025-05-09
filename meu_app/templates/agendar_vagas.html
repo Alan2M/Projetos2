@@ -1,0 +1,27 @@
+{% extends 'base_gestor.html' %}
+{% load widget_tweaks %}
+
+{% block title %}Agendar Vagas{% endblock %}
+{% block content %}
+<h2>Agendar Vagas em Lote</h2>
+<form method="post">
+  {% csrf_token %}
+  <div class="mb-3">
+    <label for="{{ form.curso.id_for_label }}">Curso</label>
+    {{ form.curso|add_class:"form-control" }}
+  </div>
+  <div class="mb-3">
+    <label for="{{ form.quantidade_alunos.id_for_label }}">Quantidade de Alunos</label>
+    {{ form.quantidade_alunos|add_class:"form-control" }}
+  </div>
+  <div class="mb-3">
+    <label>Período</label>
+    {{ form.periodo }}
+  </div>
+  <div class="mb-3">
+    <label for="{{ form.dia_agendamento.id_for_label }}">Data</label>
+    {{ form.dia_agendamento|add_class:"form-control" }}
+  </div>
+  <button type="submit" class="btn btn-primary">Agendar em Lote</button>
+</form>
+{% endblock %}

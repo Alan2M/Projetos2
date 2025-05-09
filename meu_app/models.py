@@ -29,10 +29,11 @@ class Aluno(models.Model):
     nome = models.CharField(max_length=100)
     email = models.EmailField()
     curso = models.ForeignKey(Curso, on_delete=models.SET_NULL, null=True, verbose_name="Curso escolhido")
-    data_inscricao = models.DateTimeField(auto_now_add=True, editable=False)  
-    data_entrevista = models.DateTimeField(null=True, blank=True)  
-    score = models.FloatField(default=0)  
-
+    data_inscricao = models.DateTimeField(auto_now_add=True, editable=False)
+    data_entrevista = models.DateTimeField(null=True, blank=True)
+    score = models.FloatField(default=0)
+    cpf = models.CharField(max_length=14, null=True, blank=True, verbose_name="CPF")
+        
     PREFERENCIA_TURNO = [
         ('manha', 'Manhã'),
         ('tarde', 'Tarde'),
@@ -60,9 +61,29 @@ class FormularioMarcacao(models.Model):
     trabalha = models.CharField(max_length=10)
     score = models.IntegerField(default=0)
     data_envio = models.DateTimeField(auto_now_add=True)
+    # Campos para curso e turno agora opcionais
+    curso = models.ForeignKey(
+        Curso,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+    TURNO_CHOICES = [
+        ('manha', 'Manhã'),
+        ('tarde', 'Tarde'),
+    ]
+    turno = models.CharField(
+        max_length=10,
+        choices=TURNO_CHOICES,
+        null=True,
+        blank=True
+    )
 
-    def __str__(self):
-        return f'{self.usuario.username} - Score: {self.score}'
+    @property
+    def curso_turno(self):
+        if self.curso and self.turno:
+            return f"{self.curso.nome} ({self.get_turno_display()})"
+        return None
 
 class Entrevista(models.Model):
     aluno = models.ForeignKey(Aluno, on_delete=models.CASCADE)
