@@ -1,0 +1,15 @@
+{% extends "base_gestor.html" %}
+{% block title %}Editar Entrevista{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h2 class="mb-4 text-warning">✏️ Editar Entrevista</h2>
+
+  <form method="post" class="bg-white p-4 shadow rounded">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-success">Salvar Alterações</button>
+    <a href="{% url 'calendario_entrevistas' %}" class="btn btn-secondary">Cancelar</a>
+  </form>
+</div>
+{% endblock %}

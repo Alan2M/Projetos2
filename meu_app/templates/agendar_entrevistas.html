@@ -1,0 +1,52 @@
+{% extends 'base_gestor.html' %}
+{% load widget_tweaks %}
+
+{% block title %}Agendar Entrevista{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <h2 class="mb-4 text-primary">📅 Agendar Entrevista</h2>
+
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+
+  <form method="post" class="bg-white p-4 rounded shadow w-100">
+    {% csrf_token %}
+
+    {% if aluno_selecionado %}
+      <div class="alert alert-info">
+        <strong>Aluno Selecionado:</strong> {{ aluno_selecionado.nome }} ({{ aluno_selecionado.user.email }})
+        <input type="hidden" name="aluno" value="{{ aluno_selecionado.id }}">
+      </div>
+    {% else %}
+      <div class="mb-3">
+        <label for="id_aluno" class="form-label">Aluno</label>
+        {{ form.aluno|add_class:"form-control" }}
+      </div>
+    {% endif %}
+
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <label for="id_curso" class="form-label">Curso</label>
+        {{ form.curso|add_class:"form-control" }}
+      </div>
+      <div class="col-md-6">
+        <label for="id_data_hora" class="form-label">Data e Hora</label>
+        {{ form.data_hora|add_class:"form-control" }}
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label for="id_local" class="form-label">Local da Entrevista</label>
+      {{ form.local|add_class:"form-control" }}
+    </div>
+
+    <div class="text-end">
+      <button type="submit" class="btn btn-success">📬 Confirmar Agendamento</button>
+    </div>
+  </form>
+</div>
+{% endblock %}
