@@ -18,6 +18,15 @@ urlpatterns = [
     path('gestor/alunos/', views.lista_alunos, name='lista_alunos'),
     path('gestor/calendario/', views.calendario_entrevistas, name='calendario_entrevistas'),
 
+    path('gestor/agendar/', views.agendar_entrevistas, name='agendar_entrevistas'),
+    path('gestor/sucesso/', views.sucesso_agendamento, name='sucesso_agendamento'),
+    path('entrevistas/', views.lista_entrevistas_por_dia, name='lista_entrevistas_por_dia'),
+    path('entrevistas/', views.lista_entrevistas_por_dia, name='lista_entrevistas_por_dia'),
+    path('entrevistas/editar/<int:pk>/', views.editar_entrevista, name='editar_entrevista'),
+    path('entrevistas/excluir/<int:pk>/', views.excluir_entrevista, name='excluir_entrevista'),
+    path('gestor/agendar-entrevista/', views.agendar_entrevista_individual, name='agendar_entrevista'),
+
+
     # Cadastro de alunos
     path('alunos/cadastrar/', views.cadastrar_aluno, name='cadastrar_aluno'),
 ]

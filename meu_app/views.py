@@ -6,6 +6,14 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from datetime import datetime
 from .models import Perfil, Aluno, FormularioMarcacao
 from .forms import FiltroAlunoForm, AlunoForm, CriarAdministradorForm
+from django.core.mail import send_mail
+from django.conf import settings
+from .forms import AgendamentoForm
+from .models import Aluno, Entrevista
+from datetime import datetime, timedelta
+from .forms import EntrevistaForm
+from datetime import time
+
 
 # ---------- AUTENTICAÇÃO ----------
 
@@ -166,7 +174,12 @@ def formulario_sucesso(request):
 
 # ---------- PAINEL E GESTÃO ----------
 
+<<<<<<< Updated upstream
 @user_passes_test(is_professor)
+=======
+from .models import Curso 
+@login_required
+>>>>>>> Stashed changes
 def painel_gestor(request):
     form = FiltroAlunoForm(request.GET or None)
     alunos = Aluno.objects.all()
@@ -176,12 +189,17 @@ def painel_gestor(request):
             alunos = alunos.filter(nome__icontains=form.cleaned_data['nome'])
         if form.cleaned_data.get('email'):
             alunos = alunos.filter(email__icontains=form.cleaned_data['email'])
-        if form.cleaned_data.get('serie'):
-            alunos = alunos.filter(serie__icontains=form.cleaned_data['serie'])
         if form.cleaned_data.get('data_inscricao'):
             alunos = alunos.filter(data_inscricao__date=form.cleaned_data['data_inscricao'])
+        if form.cleaned_data.get('curso'):
+            alunos = alunos.filter(curso=form.cleaned_data['curso'])
 
-    return render(request, 'gestor.html', {'alunos': alunos, 'form': form})
+    return render(request, 'gestor.html', {
+        'alunos': alunos,
+        'form': form,
+        'cursos': Curso.objects.all(),  
+    })
+
 
 @user_passes_test(is_professor)
 def lista_alunos(request):
@@ -217,16 +235,23 @@ def lista_alunos(request):
 
 @login_required
 def cadastrar_aluno(request):
-    dados_iniciais = {
-        'nome': request.GET.get('nome', ''),
-        'email': request.GET.get('email', ''),
-        'serie': request.GET.get('serie', ''),
-    }
-
-    perfil = None
     nome = request.GET.get('nome')
     email = request.GET.get('email')
+    curso_nome = request.GET.get('curso')
 
+    dados_iniciais = {
+        'nome': nome or '',
+        'email': email or '',
+    }
+
+    if curso_nome:
+        try:
+            curso = Curso.objects.get(nome=curso_nome)
+            dados_iniciais['curso'] = curso
+        except Curso.DoesNotExist:
+            pass
+
+    perfil = None
     if nome and email:
         perfil = Perfil.objects.filter(nome=nome, user__email=email).first()
 
@@ -235,13 +260,11 @@ def cadastrar_aluno(request):
         if form.is_valid():
             email = form.cleaned_data['email']
 
-            # Verifica se já existe um aluno com o mesmo e-mail
             if Aluno.objects.filter(email=email).exists():
                 messages.error(request, "Já existe um aluno cadastrado com esse e-mail.")
             else:
                 form.save()
 
-                # Se o perfil existir, remove o User correspondente
                 if perfil:
                     user = perfil.user
                     perfil.delete()
@@ -315,3 +338,138 @@ def calendario_entrevistas(request):
     }
 
     return render(request, 'calendario.html', contexto)
+
+def agendar_entrevistas(request):
+    if request.method == 'POST':
+        form = AgendamentoForm(request.POST)
+        if form.is_valid():
+            curso = form.cleaned_data['curso']
+            qtd = form.cleaned_data['quantidade_alunos']
+            periodo = form.cleaned_data['periodo']
+            dia = form.cleaned_data['dia_agendamento']
+
+            # Horários fixos com base no período
+            if periodo == 'manha':
+                hora_inicial = time(hour=8)
+                hora_final = time(hour=11)
+            else:  # tarde
+                hora_inicial = time(hour=13)
+                hora_final = time(hour=16)
+
+            # Gera lista de horários a cada 30 min
+            horarios = []
+            atual = datetime.combine(dia, hora_inicial)
+            fim = datetime.combine(dia, hora_final)
+            while atual <= fim and len(horarios) < qtd:
+                horarios.append(atual)
+                atual += timedelta(minutes=30)
+
+            # Pega os alunos com maior score
+            alunos = Aluno.objects.filter(curso=curso).order_by('-score')[:len(horarios)]
+
+            for aluno, horario in zip(alunos, horarios):
+                entrevista = Entrevista.objects.create(
+                    aluno=aluno,
+                    curso=curso,
+                    data_hora=horario,
+                    local="R. Alcântara, 170 - Coqueiral, Recife - PE, 50791-560"
+                )
+
+                aluno.data_entrevista = horario
+                aluno.save()
+
+                send_mail(
+                    subject='Entrevista Agendada',
+                    message=f"""
+Olá {aluno.nome},
+
+Você foi selecionado para uma entrevista do curso "{curso.nome}".
+
+🗓 Data: {horario.strftime('%d/%m/%Y')}
+🕒 Hora: {horario.strftime('%H:%M')}
+📍 Local: R. Alcântara, 170 - Coqueiral, Recife - PE, 50791-560
+
+Compareça com 10 minutos de antecedência. Boa sorte!
+
+Atenciosamente,
+Equipe de Seleção
+""",
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[aluno.email],
+                    fail_silently=False
+                )
+
+            return redirect('sucesso_agendamento')
+    else:
+        form = AgendamentoForm()
+
+    return render(request, 'agendar_entrevistas.html', {'form': form})
+
+from .models import Entrevista
+
+@login_required
+def lista_entrevistas_por_dia(request):
+    data_str = request.GET.get('data')
+    entrevistas = []
+
+    if data_str:
+        try:
+            data = datetime.strptime(data_str, '%Y-%m-%d').date()
+            entrevistas = Entrevista.objects.filter(data_hora__date=data)
+        except ValueError:
+            messages.error(request, "Data inválida.")
+
+    return render(request, 'entrevistas_por_dia.html', {
+        'data': data_str,
+        'entrevistas': entrevistas
+    })
+
+eventos = {}
+for entrevista in Entrevista.objects.all():
+    data_str = entrevista.data_hora.strftime('%Y-%m-%d')
+    eventos.setdefault(data_str, []).append(f"{entrevista.aluno.nome} - {entrevista.data_hora.strftime('%H:%M')}")
+
+@login_required
+def editar_entrevista(request, pk):
+    entrevista = get_object_or_404(Entrevista, pk=pk)
+    if request.method == 'POST':
+        form = EntrevistaForm(request.POST, instance=entrevista)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Entrevista atualizada com sucesso!")
+            return redirect('lista_entrevistas_por_dia')  # você pode passar ?data=... de volta se quiser
+    else:
+        form = EntrevistaForm(instance=entrevista)
+    return render(request, 'editar_entrevista.html', {'form': form})
+
+@login_required
+def excluir_entrevista(request, pk):
+    entrevista = get_object_or_404(Entrevista, pk=pk)
+    entrevista.delete()
+    messages.success(request, "Entrevista excluída com sucesso!")
+    return redirect('calendario_entrevistas')
+
+@login_required
+def sucesso_agendamento(request):
+    return render(request, 'sucesso.html')
+
+@login_required
+def agendar_entrevista_individual(request):
+    aluno_id = request.GET.get('aluno_id')
+    aluno = get_object_or_404(Aluno, id=aluno_id) if aluno_id else None
+
+    if request.method == 'POST':
+        form = EntrevistaForm(request.POST)
+        if form.is_valid():
+            entrevista = form.save()
+            aluno.data_entrevista = entrevista.data_hora
+            aluno.save()
+            messages.success(request, "Entrevista agendada com sucesso.")
+            return redirect('painel_gestor')
+    else:
+        form = EntrevistaForm(initial={'aluno': aluno})
+
+    return render(request, 'agendar_entrevistas.html', {
+        'form': form,
+        'aluno_selecionado': aluno
+    })

@@ -56,7 +56,7 @@
       margin-bottom: 15px;
       color: #333;
     }
-    .filter-box input {
+    .filter-box input, .filter-box select {
       width: 100%;
       padding: 8px;
       margin-bottom: 10px;
@@ -115,33 +115,33 @@
 
   <div class="main">
     <div class="sidebar">
-      <a href="{% url 'inicio_gestor' %}">
-        <i class="fas fa-user" title="Página Inicial do Gestor"></i>
-      </a>
-      <a href="{% url 'painel_gestor' %}">
-        <i class="fas fa-table" title="Lista de Alunos"></i>
-      </a>
+      <a href="{% url 'inicio_gestor' %}"><i class="fas fa-user" title="Página Inicial do Gestor"></i></a>
+      <a href="{% url 'painel_gestor' %}"><i class="fas fa-table" title="Lista de Alunos"></i></a>
       <a href="{% url 'lista_alunos' %}"><i class="fas fa-filter" title="Filtrar Alunos"></i></a>
       <a href="#"><i class="fas fa-calendar-alt" title="Calendário"></i></a>
       <a href="#"><i class="fas fa-bell" title="Notificações"></i></a>
-      <a href="{% url 'cadastrar_aluno' %}">
-        <i class="fas fa-plus" title="Cadastrar Aluno"></i>
-      </a>
-      <a href="{% url 'logout' %}">
-        <i class="fas fa-sign-out-alt" title="Sair"></i>
-      </a>
+      <a href="{% url 'cadastrar_aluno' %}"><i class="fas fa-plus" title="Cadastrar Aluno"></i></a>
+      <a href="{% url 'logout' %}"><i class="fas fa-sign-out-alt" title="Sair"></i></a>
     </div>
 
     <div class="content">
-        <h2>Alunos Cadastrados</h2>
+      <h2>Alunos Cadastrados</h2>
 
       <div class="filter-box">
         <h3>Filtrar Alunos</h3>
         <form method="get">
           <input type="text" name="nome" placeholder="Nome" value="{{ request.GET.nome }}">
           <input type="email" name="email" placeholder="Email" value="{{ request.GET.email }}">
-          <input type="text" name="serie" placeholder="Curso escolhido" value="{{ request.GET.serie }}">
+
+          <select name="curso">
+            <option value="">Todos os cursos</option>
+            {% for c in cursos %}
+              <option value="{{ c.id }}" {% if request.GET.curso == c.id|stringformat:"s" %}selected{% endif %}>{{ c.nome }}</option>
+            {% endfor %}
+          </select>
+
           <input type="date" name="data_inscricao" placeholder="Data de inscrição" value="{{ request.GET.data_inscricao }}">
+
           <div class="filter-actions">
             <button type="submit" class="btn btn-primary">Filtrar</button>
             <a href="{% url 'painel_gestor' %}" class="btn btn-secondary">Limpar Filtros</a>
@@ -153,28 +153,40 @@
         <thead>
           <tr>
             <th>Aluno</th>
-            <th>Curso escolhido</th>
+            <th>Curso</th>
             <th>Data de inscrição</th>
             <th>Data da entrevista</th>
+            <th>Ações</th>
           </tr>
         </thead>
         <tbody>
           {% for aluno in alunos %}
           <tr>
             <td>{{ aluno.nome }}</td>
-            <td>{{ aluno.serie }}</td>
+            <td>{{ aluno.curso.nome }}</td>
             <td>{{ aluno.data_inscricao|date:"d/m/Y" }}</td>
             <td>
-              {% if aluno.data_entrevista %}
-                {{ aluno.data_entrevista|date:"d/m/Y" }}
+              {% if aluno.entrevista %}
+                {{ aluno.entrevista.data_hora|date:"d/m/Y H:i" }}
               {% else %}
-                Não marcada
+                <span class="text-muted">Não marcada</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if not aluno.entrevista %}
+                <a href="{% url 'agendar_entrevista' %}?aluno_id={{ aluno.id }}" class="btn btn-sm btn-outline-primary">
+                  Agendar
+                </a>
+              {% else %}
+                <a href="{% url 'responder_entrevista' aluno.entrevista.id %}" class="btn btn-sm btn-success">
+                  Preencher
+                </a>
               {% endif %}
             </td>
           </tr>
           {% empty %}
           <tr>
-            <td colspan="4">Nenhum aluno encontrado.</td>
+            <td colspan="5">Nenhum aluno encontrado.</td>
           </tr>
           {% endfor %}
         </tbody>

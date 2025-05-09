@@ -1,5 +1,6 @@
 {% extends 'base_gestor.html' %}
-{% load form_extras %}
+{% load widget_tweaks %}
+{% load custom_filters %}
 {% load static %}
 
 {% block title %}Filtrar Alunos Inscritos{% endblock %}
@@ -22,8 +23,8 @@
           {{ form.cpf|add_class:"form-control" }}
       </div>
       <div class="col-md-3">
-          <label for="id_serie" class="form-label">Curso escolhido</label>
-          {{ form.serie|add_class:"form-control" }}
+          <label for="id_curso" class="form-label">Curso escolhido</label>
+          {{ form.curso|add_class:"form-control" }}
       </div>
       <div class="col-md-3">
           <label for="id_data_inscricao" class="form-label">Data de Inscrição</label>
@@ -54,7 +55,7 @@
                   <th>Curso escolhido</th>
                   <th>Data de Inscrição</th>
                   <th>Score</th>
-                  <th>Ação</th>
+                  <th>Ações</th>
               </tr>
           </thead>
           <tbody>
@@ -63,13 +64,17 @@
                   <td>{{ aluno.nome }}</td>
                   <td>{{ aluno.user.email }}</td>
                   <td>{{ aluno.cpf }}</td>
-                  <td>{{ aluno.serie }}</td>
+                  <td>{{ aluno.curso }}</td>
                   <td>{{ aluno.user.date_joined|date:"d/m/Y H:i" }}</td>
                   <td>{{ aluno.score_vulnerabilidade }}</td>
                   <td>
-                    <a href="{% url 'cadastrar_aluno' %}?nome={{ aluno.nome|urlencode }}&email={{ aluno.user.email|urlencode }}&serie={{ aluno.serie|urlencode }}" class="btn btn-sm btn-success">
-                      Cadastrar
-                    </a>
+                    {% if aluno.user.aluno %}
+                      <span class="text-muted">Já cadastrado</span>
+                    {% else %}
+                      <a href="{% url 'cadastrar_aluno' %}?nome={{ aluno.nome|urlencode }}&email={{ aluno.user.email|urlencode }}&curso={{ aluno.curso.nome|urlencode }}" class="btn btn-sm btn-success">
+                        Cadastrar
+                      </a>
+                    {% endif %}
                   </td>
               </tr>
               {% empty %}

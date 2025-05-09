@@ -1,6 +1,13 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+class Curso(models.Model):
+    nome = models.CharField(max_length=100)
+    descricao = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.nome
+
 class Perfil(models.Model):
     TIPOS = (
         ('aluno', 'Aluno'),
@@ -21,9 +28,22 @@ class Perfil(models.Model):
 class Aluno(models.Model):
     nome = models.CharField(max_length=100)
     email = models.EmailField()
-    serie = models.CharField("Curso escolhido", max_length=50)
-    data_inscricao = models.DateTimeField(auto_now_add=True, editable=False)  # ✅ não editável
-    data_entrevista = models.DateField(null=True, blank=True)
+    curso = models.ForeignKey(Curso, on_delete=models.SET_NULL, null=True, verbose_name="Curso escolhido")
+    data_inscricao = models.DateTimeField(auto_now_add=True, editable=False)  
+    data_entrevista = models.DateTimeField(null=True, blank=True)  
+    score = models.FloatField(default=0)  
+
+    PREFERENCIA_TURNO = [
+        ('manha', 'Manhã'),
+        ('tarde', 'Tarde'),
+        ('indiferente', 'Indiferente'),
+    ]
+    preferencia_turno = models.CharField(
+        max_length=12,
+        choices=PREFERENCIA_TURNO,
+        default='indiferente',
+        verbose_name="Preferência de Entrevista"
+    )
 
     def __str__(self):
         return self.nome
@@ -43,3 +63,12 @@ class FormularioMarcacao(models.Model):
 
     def __str__(self):
         return f'{self.usuario.username} - Score: {self.score}'
+
+class Entrevista(models.Model):
+    aluno = models.ForeignKey(Aluno, on_delete=models.CASCADE)
+    curso = models.ForeignKey(Curso, on_delete=models.CASCADE)
+    data_hora = models.DateTimeField()
+    local = models.CharField(max_length=255)
+
+    def __str__(self):
+        return f"{self.aluno.nome} - {self.data_hora.strftime('%d/%m %H:%M')}"

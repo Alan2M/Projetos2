@@ -1,5 +1,5 @@
 {% extends "base_gestor.html" %}
-{% load static %}
+{% load static custom_filters %}
 
 {% block title %}Calendário de Entrevistas{% endblock %}
 
@@ -54,6 +54,12 @@
     display: block;
     color: #1c7c1c;
   }
+  .no-event {
+    font-size: 11px;
+    color: #999;
+    margin-top: 4px;
+    display: block;
+  }
 </style>
 
 <div class="calendar-container">
@@ -76,10 +82,12 @@
         <td class="{% if dia.month != mes %}outside-month{% endif %}">
           <small>{{ dia.day|stringformat:"02d" }}</small>
           {% with data=dia|date:"Y-m-d" %}
-            {% if eventos.data %}
-              {% for nome in eventos.data %}
-                <span class="event">{{ nome }}</span>
-              {% endfor %}
+            {% if eventos|get_item:data %}
+              <a href="{% url 'lista_entrevistas_por_dia' %}?data={{ data }}" class="event">
+                {{ eventos|get_item:data|length }} entrevista(s)
+              </a>
+            {% else %}
+              <span class="no-event">Nenhuma</span>
             {% endif %}
           {% endwith %}
         </td>

@@ -34,21 +34,20 @@
           <label for="id_nome" class="form-label">Nome</label>
           {{ form.nome|add_class:"form-control" }}
         </div>
+
         <div class="mb-3">
           <label for="id_email" class="form-label">Email</label>
           {{ form.email|add_class:"form-control" }}
         </div>
+
         <div class="mb-3">
-          <label for="id_serie" class="form-label">Curso</label>
-          {{ form.serie|add_class:"form-control" }}
+          <label for="id_curso" class="form-label">Curso</label>
+          {{ form.curso|add_class:"form-control" }}
         </div>
+
         <div class="mb-3">
-          <label for="id_data_inscricao" class="form-label">Data de Inscrição</label>
-          {{ form.data_inscricao|add_class:"form-control" }}
-        </div>
-        <div class="mb-3">
-          <label for="id_data_entrevista" class="form-label">Data da Entrevista</label>
-          {{ form.data_entrevista|add_class:"form-control" }}
+          <label for="id_preferencia_turno" class="form-label">Turno Preferido</label>
+          {{ form.preferencia_turno|add_class:"form-select" }}
         </div>
 
         <button type="submit" class="btn btn-success w-100">Salvar Aluno</button>

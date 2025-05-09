@@ -132,4 +132,11 @@ LOGOUT_REDIRECT_URL = '/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LOGIN_URL = '/login/'
-    
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'solidreams.pe@gmail.com'
+EMAIL_HOST_PASSWORD = 'usuo xrng hquz zusa'
+DEFAULT_FROM_EMAIL = 'Instituto XYZ <solidreams.pe@gmail.com>'
