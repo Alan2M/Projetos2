@@ -10,6 +10,7 @@ from django.utils import timezone
 PERIODO_CHOICES = [
     ('manha', 'Manhã'),
     ('tarde', 'Tarde'),
+    ('noite', 'Noite'),
 ]
 
 # ---------------------------

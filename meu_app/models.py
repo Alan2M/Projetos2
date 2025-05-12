@@ -4,9 +4,20 @@ from django.contrib.auth.models import User
 class Curso(models.Model):
     nome = models.CharField(max_length=100)
     descricao = models.TextField(blank=True)
+    TURNO_CHOICES = [
+        ('manha', 'Manhã'),
+        ('tarde', 'Tarde'),
+        ('noite', 'Noite'),
+    ]
+    turno = models.CharField(
+        max_length=6,
+        choices=TURNO_CHOICES,
+        default='manha',
+        verbose_name='Turno'
+    )
 
     def __str__(self):
-        return self.nome
+        return f"{self.nome} – {self.get_turno_display()}"
 
 class Perfil(models.Model):
     TIPOS = (
@@ -21,6 +32,13 @@ class Perfil(models.Model):
     celular = models.CharField(max_length=15, null=True, blank=True)
     data_nascimento = models.DateField()
     score_vulnerabilidade = models.IntegerField(default=0)
+    curso = models.ForeignKey(
+        Curso,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="Curso desejado"
+    )
 
     def __str__(self):
         return f"{self.nome} ({self.tipo})"
@@ -33,10 +51,11 @@ class Aluno(models.Model):
     data_entrevista = models.DateTimeField(null=True, blank=True)
     score = models.FloatField(default=0)
     cpf = models.CharField(max_length=14, null=True, blank=True, verbose_name="CPF")
-        
+    
     PREFERENCIA_TURNO = [
         ('manha', 'Manhã'),
         ('tarde', 'Tarde'),
+        ('noite', 'Noite'),
         ('indiferente', 'Indiferente'),
     ]
     preferencia_turno = models.CharField(
@@ -61,7 +80,7 @@ class FormularioMarcacao(models.Model):
     trabalha = models.CharField(max_length=10)
     score = models.IntegerField(default=0)
     data_envio = models.DateTimeField(auto_now_add=True)
-    # Campos para curso e turno agora opcionais
+
     curso = models.ForeignKey(
         Curso,
         on_delete=models.CASCADE,
@@ -71,6 +90,7 @@ class FormularioMarcacao(models.Model):
     TURNO_CHOICES = [
         ('manha', 'Manhã'),
         ('tarde', 'Tarde'),
+        ('noite', 'Noite'),
     ]
     turno = models.CharField(
         max_length=10,

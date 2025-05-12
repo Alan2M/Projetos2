@@ -3,9 +3,9 @@ from .models import Perfil, Aluno, FormularioMarcacao, Curso, Entrevista
 
 @admin.register(Perfil)
 class PerfilAdmin(admin.ModelAdmin):
-    list_display = ('user', 'nome', 'cpf', 'celular', 'score_vulnerabilidade')
+    list_display = ('user', 'nome', 'cpf', 'celular', 'curso', 'score_vulnerabilidade')
     search_fields = ('user__username', 'nome', 'cpf', 'celular')
-    list_filter = ('tipo', 'score_vulnerabilidade')
+    list_filter = ('tipo', 'curso', 'score_vulnerabilidade')
     ordering = ('-score_vulnerabilidade',)
 
 
@@ -20,9 +20,9 @@ class AlunoAdmin(admin.ModelAdmin):
 
 @admin.register(FormularioMarcacao)
 class FormularioMarcacaoAdmin(admin.ModelAdmin):
-    list_display = ('usuario', 'score', 'data_envio')
+    list_display = ('usuario', 'score', 'data_envio', 'curso', 'turno')
     search_fields = ('usuario__username',)
-    list_filter = ('score', 'data_envio')
+    list_filter = ('score', 'curso', 'turno', 'data_envio')
     ordering = ('-data_envio',)
 
 
@@ -43,5 +43,7 @@ class EntrevistaAdmin(admin.ModelAdmin):
 
 @admin.register(Curso)
 class CursoAdmin(admin.ModelAdmin):
-    list_display = ('nome', 'descricao')
+    fields = ('nome', 'turno', 'descricao')
+    list_display = ('nome', 'turno', 'descricao')
     search_fields = ('nome',)
+    list_filter = ('turno',)

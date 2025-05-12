@@ -8,7 +8,6 @@ from django.conf import settings
 from django import forms
 from django.forms import HiddenInput
 
-
 from datetime import datetime, date, time, timedelta
 import calendar
 
@@ -31,8 +30,10 @@ from .forms import (
 def is_professor(user):
     return (
         user.is_authenticated
-        and hasattr(user, 'perfil')
-        and user.perfil.tipo == 'professor'
+        and (
+            user.is_superuser
+            or (hasattr(user, 'perfil') and user.perfil.tipo == 'professor')
+        )
     )
 
 
@@ -46,12 +47,16 @@ def home(request):
 
 
 def cadastro(request):
-    return render(request, 'cadastro.html')
+    # lista de cursos para o formulário
+    cursos = Curso.objects.all()
+    return render(request, 'cadastro.html', {
+        'cursos': cursos,
+    })
 
 
 def processar_cadastro(request):
     if request.method != "POST":
-        return render(request, "cadastro.html")
+        return redirect('cadastro')
 
     email = request.POST.get("email")
     senha = request.POST.get("senha")
@@ -61,11 +66,17 @@ def processar_cadastro(request):
     celular = request.POST.get("celular")
     data_nascimento = request.POST.get("data-nascimento")
     tipo = request.POST.get("tipo")
+    curso_id = request.POST.get("curso")
 
     context = {
-        'nome': nome, 'email': email, 'cpf': cpf,
-        'celular': celular, 'data_nascimento': data_nascimento,
+        'nome': nome,
+        'email': email,
+        'cpf': cpf,
+        'celular': celular,
+        'data_nascimento': data_nascimento,
         'tipo': tipo,
+        'cursos': Curso.objects.all(),
+        'curso_selecionado': curso_id,
     }
 
     if senha != confirmar_senha:
@@ -88,6 +99,15 @@ def processar_cadastro(request):
 
     try:
         usuario = User.objects.create_user(username=email, email=email, password=senha)
+        # busca o objeto Curso selecionado
+        curso_obj = None
+        if curso_id:
+            try:
+                curso_obj = Curso.objects.get(pk=curso_id)
+            except Curso.DoesNotExist:
+                messages.error(request, "Curso selecionado inválido.")
+                return render(request, "cadastro.html", context)
+
         Perfil.objects.create(
             user=usuario,
             nome=nome,
@@ -95,6 +115,7 @@ def processar_cadastro(request):
             celular=celular,
             data_nascimento=data_obj,
             tipo=tipo,
+            curso=curso_obj,
         )
         messages.success(request, "Cadastro realizado com sucesso!")
         return redirect("home")
@@ -124,11 +145,9 @@ def login_usuario(request):
         'email': request.POST.get('email', '')
     })
 
-
 def logout_usuario(request):
     logout(request)
     return redirect('home')
-
 
 # ---------- FORMULÁRIOS E PERFIL ----------
 
