@@ -1,15 +1,15 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.contrib.auth import login, logout
+from django.contrib.auth import authenticate, login, logout 
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.mail import send_mail
 from django.conf import settings
 from django import forms
-from django.forms import HiddenInput
-
+from django.contrib.auth import authenticate, login
 from datetime import datetime, date, time, timedelta
 import calendar
+from django.db import IntegrityError
 
 from .models import (
     Perfil,
@@ -47,7 +47,6 @@ def home(request):
 
 
 def cadastro(request):
-    # lista de cursos para o formulário
     cursos = Curso.objects.all()
     return render(request, 'cadastro.html', {
         'cursos': cursos,
@@ -65,8 +64,8 @@ def processar_cadastro(request):
     nome = request.POST.get("nome")
     celular = request.POST.get("celular")
     data_nascimento = request.POST.get("data-nascimento")
-    tipo = request.POST.get("tipo")
     curso_id = request.POST.get("curso")
+    tipo = 'aluno'  # todo cadastro via formulário é sempre aluno
 
     context = {
         'nome': nome,
@@ -74,7 +73,6 @@ def processar_cadastro(request):
         'cpf': cpf,
         'celular': celular,
         'data_nascimento': data_nascimento,
-        'tipo': tipo,
         'cursos': Curso.objects.all(),
         'curso_selecionado': curso_id,
     }
@@ -99,7 +97,7 @@ def processar_cadastro(request):
 
     try:
         usuario = User.objects.create_user(username=email, email=email, password=senha)
-        # busca o objeto Curso selecionado
+
         curso_obj = None
         if curso_id:
             try:
@@ -117,6 +115,7 @@ def processar_cadastro(request):
             tipo=tipo,
             curso=curso_obj,
         )
+
         messages.success(request, "Cadastro realizado com sucesso!")
         return redirect("home")
     except Exception as e:
@@ -126,28 +125,41 @@ def processar_cadastro(request):
 
 def login_usuario(request):
     if request.method == "POST":
-        email = request.POST.get("email")
-        senha = request.POST.get("senha")
-        tipo = request.POST.get("tipo")
+        login_input = request.POST.get("email", "").strip()
+        senha = request.POST.get("senha", "").strip()
 
-        user = User.objects.filter(username=email).first()
-        if user and user.check_password(senha):
-            perfil = getattr(user, 'perfil', None)
-            if perfil and perfil.tipo == tipo:
+        user = authenticate(request, username=login_input, password=senha)
+
+        if user is None:
+            try:
+                by_email = User.objects.get(email=login_input)
+                user = authenticate(request, username=by_email.username, password=senha)
+            except User.DoesNotExist:
+                user = None
+
+        if user is None:
+            messages.error(request, "Email ou senha incorretos!")
+        else:
+            perfil = getattr(user, "perfil", None)
+            if not perfil:
+                messages.error(request, "Perfil de usuário não encontrado.")
+            else:
                 login(request, user)
                 messages.success(request, "Login realizado com sucesso!")
-                return redirect("inicio_gestor") if tipo == 'professor' else redirect("home")
-            messages.error(request, "Tipo de login inválido para esse usuário.")
-        else:
-            messages.error(request, "Email ou senha incorretos!")
+                if user.is_superuser:
+                    return redirect("inicio_gestor")
+                if perfil.tipo == "professor":
+                    return redirect("painel_gestor")
+                return redirect("home")
 
-    return render(request, "login.html", {
-        'email': request.POST.get('email', '')
-    })
+    return render(request, "login.html", {"email": request.POST.get("email", "")})
+
+
 
 def logout_usuario(request):
     logout(request)
     return redirect('home')
+
 
 # ---------- FORMULÁRIOS E PERFIL ----------
 
@@ -171,7 +183,6 @@ def formulario_view(request):
             messages.error(request, "Por favor, preencha todas as respostas.")
             return render(request, "formulario.html", {"respostas": respostas})
 
-        # Cálculo de score
         def calc(r):
             s = 0
             if r["pessoas_moram"] == "Mais de dez": s += 3
@@ -261,7 +272,6 @@ def cadastrar_aluno(request):
     email = request.GET.get('email')
     curso_nome = request.GET.get('curso')
 
-    # Preenchimento inicial do form
     iniciais = {'nome': nome or '', 'email': email or ''}
     if curso_nome:
         try:
@@ -269,7 +279,6 @@ def cadastrar_aluno(request):
         except Curso.DoesNotExist:
             pass
 
-    # Busca perfil existente para copiar CPF
     perfil = None
     if nome and email:
         perfil = Perfil.objects.filter(nome=nome, user__email=email).first()
@@ -277,21 +286,16 @@ def cadastrar_aluno(request):
     if request.method == 'POST':
         form = AlunoForm(request.POST)
         if form.is_valid():
-            # Já existe?
             if Aluno.objects.filter(email=form.cleaned_data['email']).exists():
                 messages.error(request, "Já existe um aluno cadastrado com esse e-mail.")
             else:
-                # Salva commit=False para podermos inserir o CPF
                 aluno = form.save(commit=False)
                 if perfil:
                     aluno.cpf = perfil.cpf
                 aluno.save()
-
-                # Remove o perfil antigo se existir
                 if perfil:
                     perfil.user.delete()
                     perfil.delete()
-
                 messages.success(request, "Aluno cadastrado com sucesso!")
                 return redirect('painel_gestor')
     else:
@@ -302,33 +306,59 @@ def cadastrar_aluno(request):
         'perfil': perfil
     })
 
+
 @login_required
-@user_passes_test(is_professor)
+@user_passes_test(lambda u: u.is_superuser)
 def inicio_gestor(request):
     total_alunos = Aluno.objects.count()
     total_formularios = FormularioMarcacao.objects.count()
-    form = CriarAdministradorForm()
+
+    context_inputs = {
+        "username_val": "",
+        "email_val": "",
+    }
 
     if request.method == "POST":
-        form = CriarAdministradorForm(request.POST)
-        if form.is_valid():
-            novo_admin = form.save(commit=False)
-            novo_admin.set_password(form.cleaned_data['senha'])
-            novo_admin.save()
-            Perfil.objects.create(
-                user=novo_admin,
-                nome=novo_admin.username,
-                tipo='professor',
-                data_nascimento='2000-01-01'
-            )
-            messages.success(request, "Administrador criado com sucesso!")
+        username = request.POST.get("username", "").strip()
+        email    = request.POST.get("email", "").strip()
+        senha    = request.POST.get("senha", "").strip()
 
-    return render(request, 'inicio_gestor.html', {
-        'total_alunos': total_alunos,
-        'total_formularios': total_formularios,
-        'form': form
+        context_inputs["username_val"] = username
+        context_inputs["email_val"]    = email
+
+        if not username or not email or not senha:
+            messages.error(request, "Todos os campos são obrigatórios.")
+        elif User.objects.filter(username=username).exists():
+            messages.error(request, "Nome de usuário já cadastrado.")
+        elif User.objects.filter(email=email).exists():
+            messages.error(request, "Já existe um usuário com este e‑mail.")
+        elif len(senha) < 6:
+            messages.error(request, "A senha deve ter pelo menos 6 caracteres.")
+        else:
+            try:
+                novo = User.objects.create_user(
+                    username=username,
+                    email=email,
+                    password=senha
+                )
+                Perfil.objects.create(
+                    user=novo,
+                    nome=novo.username,
+                    tipo='professor',
+                    data_nascimento=date.today()
+                )
+                messages.success(request, "Professor criado com sucesso!")
+                return redirect("inicio_gestor")
+            except IntegrityError:
+                messages.error(request, "Erro ao criar usuário. Verifique se o nome ou e‑mail já existem.")
+            except Exception as e:
+                messages.error(request, f"Erro inesperado: {e}")
+
+    return render(request, "inicio_gestor.html", {
+        "total_alunos":      total_alunos,
+        "total_formularios": total_formularios,
+        **context_inputs,
     })
-
 
 @login_required
 @user_passes_test(is_professor)
@@ -445,7 +475,6 @@ def editar_entrevista(request, pk):
     if request.method == 'POST':
         form = EntrevistaForm(request.POST, instance=entrevista)
         if form.is_valid():
-            # salva apenas data_hora e local, mantém aluno e curso originais
             e = form.save(commit=False)
             e.aluno  = entrevista.aluno
             e.curso  = entrevista.curso
@@ -454,7 +483,6 @@ def editar_entrevista(request, pk):
             return redirect('lista_entrevistas_por_dia')
     else:
         form = EntrevistaForm(instance=entrevista)
-        # remove dos inputs (eles permanecem no instance, mas não aparecem)
         form.fields['aluno'].widget  = forms.HiddenInput()
         form.fields['curso'].widget  = forms.HiddenInput()
 
@@ -501,16 +529,17 @@ def agendar_entrevista_individual(request):
         'aluno_selecionado': aluno
     })
 
+
 @login_required
 @user_passes_test(is_professor)
 def lista_entrevistas_por_curso(request, curso_id):
-    from django.shortcuts import get_object_or_404
     curso = get_object_or_404(Curso, pk=curso_id)
     entrevistas = Entrevista.objects.filter(curso=curso)
     return render(request, 'entrevistas_por_curso.html', {
         'curso': curso,
         'entrevistas': entrevistas
     })
+
 
 @login_required
 @user_passes_test(is_professor)
@@ -525,3 +554,47 @@ def todas_entrevistas(request):
         'entrevistas': entrevistas,
         'curso_selecionado': int(curso_id) if curso_id else None,
     })
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def lista_professores(request):
+    profs = Perfil.objects.filter(tipo='professor').select_related('user')
+    return render(request, "lista_professores.html", {"profs": profs})
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def editar_professor(request, user_id):
+    prof_user = get_object_or_404(User, id=user_id)
+    perfil    = prof_user.perfil
+
+    if request.method == "POST":
+        nome  = request.POST.get("nome", "").strip()
+        email = request.POST.get("email", "").strip()
+        senha = request.POST.get("senha", "").strip()
+
+        if not nome or not email:
+            messages.error(request, "Nome e e‑mail são obrigatórios.")
+        else:
+            prof_user.email = email
+            prof_user.username = email          # opcional: username = email
+            if senha:
+                prof_user.set_password(senha)
+            prof_user.save()
+
+            perfil.nome = nome
+            perfil.save()
+
+            messages.success(request, "Professor atualizado!")
+            return redirect("lista_professores")
+
+    return render(request, "editar_professor.html", {
+        "prof": perfil,
+    })
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def excluir_professor(request, user_id):
+    prof_user = get_object_or_404(User, id=user_id)
+    prof_user.delete()
+    messages.success(request, "Professor excluído.")
+    return redirect("lista_professores")

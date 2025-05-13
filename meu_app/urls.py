@@ -44,4 +44,10 @@ urlpatterns = [
 
     # — Cadastro de alunos —
     path('alunos/cadastrar/', views.cadastrar_aluno, name='cadastrar_aluno'),
+
+    #super user acesso editar/excluir professores
+    path('gestor/professores/',views.lista_professores,  name='lista_professores'),
+    path('gestor/professores/editar/<int:user_id>/', views.editar_professor, name='editar_professor'),
+    path('gestor/professores/excluir/<int:user_id>/', views.excluir_professor, name='excluir_professor'),
+
 ]
