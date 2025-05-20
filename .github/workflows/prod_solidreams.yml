@@ -27,49 +27,28 @@ jobs:
       - name: 🧩 Coletar arquivos estáticos
         run: python manage.py collectstatic --noinput
 
-      - name: 🧹 Remover arquivos de teste
+      - name: 🧹 Remover arquivos sensíveis
         run: |
           rm -f db.sqlite3
-          rm -f .env
+          rm -f .env || true
 
       - name: 📦 Criar artefato para deploy
         run: zip -r release.zip ./*
 
-      - name: 🗂️ Enviar artefato para o deploy
-        uses: actions/upload-artifact@v4
-        with:
-          name: python-app
-          path: release.zip
-
   deploy:
     runs-on: ubuntu-latest
     needs: build
-    environment:
-      name: 'Produção'
-      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
-    permissions:
-      id-token: write
-      contents: read
 
     steps:
-      - name: 📥 Baixar artefato do job de build
-        uses: actions/download-artifact@v4
-        with:
-          name: python-app
+      - name: 🔄 Checkout do código
+        uses: actions/checkout@v4
 
-      - name: 🗜️ Descompactar artefato
+      - name: 📥 Restaurar artefato
         run: unzip release.zip
-
-      - name: 🔑 Login no Azure
-        uses: azure/login@v2
-        with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID }}
 
       - name: 🚀 Fazer deploy no Azure Web App
         uses: azure/webapps-deploy@v3
-        id: deploy-to-webapp
         with:
           app-name: 'solidreams'
-          slot-name: 'Production'
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: .
