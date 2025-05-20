@@ -1,4 +1,4 @@
-name: Build and deploy Python app to Azure Web App - PaginaViradaStore
+name: Deploy Azure - Produção Limpo
 
 on:
   push:
@@ -13,28 +13,29 @@ jobs:
       contents: read
 
     steps:
-      - uses: actions/checkout@v4
+      - name: 🔄 Checkout do código
+        uses: actions/checkout@v4
 
-      - name: Set up Python version
+      - name: 🐍 Configurar Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - name: Install dependencies
+      - name: 📦 Instalar dependências
         run: pip install -r requirements.txt
 
-      - name: Collect static files
+      - name: 🧩 Coletar arquivos estáticos
         run: python manage.py collectstatic --noinput
 
-      - name: Clean testing files
+      - name: 🧹 Remover arquivos de teste
         run: |
           rm -f db.sqlite3
           rm -f .env
 
-      - name: Zip artifact for deployment
+      - name: 📦 Criar artefato para deploy
         run: zip -r release.zip ./*
 
-      - name: Upload artifact for deployment jobs
+      - name: 🗂️ Enviar artefato para o deploy
         uses: actions/upload-artifact@v4
         with:
           name: python-app
@@ -44,32 +45,31 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     environment:
-      name: 'Production'
+      name: 'Produção'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
     permissions:
       id-token: write
       contents: read
 
     steps:
-      - name: Download artifact from build job
+      - name: 📥 Baixar artefato do job de build
         uses: actions/download-artifact@v4
         with:
           name: python-app
 
-      - name: Unzip artifact for deployment
+      - name: 🗜️ Descompactar artefato
         run: unzip release.zip
 
-      - name: Login to Azure
+      - name: 🔑 Login no Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_934B5CA3996B4497B53BF802D5F8B6E4 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_9A2B4CF0A5624773B212748A4E08C8DE }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_81B2B0F3E900452BB736E581218E4951 }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID }}
 
-      - name: 'solidreams'
+      - name: 🚀 Fazer deploy no Azure Web App
         uses: azure/webapps-deploy@v3
         id: deploy-to-webapp
         with:
           app-name: 'solidreams'
           slot-name: 'Production'
-
