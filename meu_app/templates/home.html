@@ -15,46 +15,38 @@
         body {
             font-family: 'Poppins', sans-serif;
         }
-
         .navbar {
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
         }
-
         .hero {
             padding: 100px 20px;
             background: linear-gradient(to right, #27c274, #1f9c5c);
             color: white;
             text-align: center;
-            background-image: url('https://via.placeholder.com/1920x800'); /* Substitua pela imagem do projeto */
+            background-image: url('https://via.placeholder.com/1920x800');
             background-size: cover;
             background-position: center;
         }
-
         .hero h1 {
             font-size: 3.5rem;
             margin-bottom: 20px;
         }
-
         .hero p {
             font-size: 1.5rem;
             margin-bottom: 30px;
         }
-
         .about-section {
             padding: 60px 20px;
             background-color: #f8f9fa;
         }
-
         .about-section h2 {
             font-size: 2.5rem;
             margin-bottom: 20px;
         }
-
         .about-section p {
             font-size: 1.2rem;
             color: #555;
         }
-
         .cta-button {
             padding: 15px 30px;
             font-size: 1.2rem;
@@ -64,11 +56,9 @@
             text-decoration: none;
             transition: background-color 0.3s ease;
         }
-
         .cta-button:hover {
             background-color: #1f9c5c;
         }
-
         .footer {
             background-color: #f4f4f4;
             padding: 20px;
@@ -76,23 +66,18 @@
             font-size: 0.9rem;
             color: #666;
         }
-
         .message-box {
             position: fixed;
             top: 20px;
             right: 20px;
             z-index: 9999;
         }
-
-        /* Transição suave para fade-out */
         #message-box .alert {
             transition: opacity 0.5s ease-out;
         }
-
         a.nav-link {
             font-weight: 500;
         }
-
         .btn-custom {
             border-radius: 30px;
         }
@@ -107,7 +92,6 @@
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
             <span class="navbar-toggler-icon"></span>
         </button>
-
         <div class="collapse navbar-collapse" id="navbarContent">
             <ul class="navbar-nav ms-auto">
                 {% if user.is_authenticated %}
@@ -133,7 +117,7 @@
     {% for message in messages %}
         <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm" role="alert">
             {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     {% endfor %}
 </div>
@@ -166,6 +150,13 @@
         <button type="button" data-bs-target="#bannerCarousel" data-bs-slide-to="2"></button>
     </div>
 </div>
+
+{# aqui, logo abaixo do carousel, adicionamos o botão #}
+{% if user.is_authenticated and not user.is_superuser and user.perfil.tipo == 'aluno' %}
+<div class="text-center my-5">
+    <a href="{% url 'status' %}" class="cta-button">Conferir meu status</a>
+</div>
+{% endif %}
 
 <!-- Hero Section -->
 <section class="hero">
@@ -222,8 +213,7 @@
 document.addEventListener('DOMContentLoaded', function() {
   document.querySelectorAll('#message-box .alert').forEach(function(alertElem) {
     setTimeout(function() {
-      var bsAlert = bootstrap.Alert.getOrCreateInstance(alertElem);
-      bsAlert.close();
+      bootstrap.Alert.getOrCreateInstance(alertElem).close();
     }, 5000);
   });
 });

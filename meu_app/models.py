@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+
 class Curso(models.Model):
     nome = models.CharField(max_length=100)
     descricao = models.TextField(blank=True)
@@ -19,12 +20,12 @@ class Curso(models.Model):
     def __str__(self):
         return f"{self.nome} – {self.get_turno_display()}"
 
+
 class Perfil(models.Model):
     TIPOS = (
         ('aluno', 'Aluno'),
         ('professor', 'Professor'),
     )
-
     tipo = models.CharField(max_length=10, choices=TIPOS)
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="perfil")
     nome = models.CharField(max_length=100)
@@ -43,7 +44,14 @@ class Perfil(models.Model):
     def __str__(self):
         return f"{self.nome} ({self.tipo})"
 
+
 class Aluno(models.Model):
+    class Status(models.TextChoices):
+        PENDENTE = "P", "Pendente"
+        CONFIRMADA = "C", "Confirmada"
+        ENTREVISTA = "E", "Selecionado para entrevista"
+        REJEITADA = "R", "Não selecionado"
+
     nome = models.CharField(max_length=100)
     email = models.EmailField()
     curso = models.ForeignKey(Curso, on_delete=models.SET_NULL, null=True, verbose_name="Curso escolhido")
@@ -51,7 +59,9 @@ class Aluno(models.Model):
     data_entrevista = models.DateTimeField(null=True, blank=True)
     score = models.FloatField(default=0)
     cpf = models.CharField(max_length=14, null=True, blank=True, verbose_name="CPF")
-    
+    status = models.CharField(max_length=1, choices=Status.choices, default=Status.PENDENTE)
+    motivo_rejeicao = models.TextField(blank=True)
+
     PREFERENCIA_TURNO = [
         ('manha', 'Manhã'),
         ('tarde', 'Tarde'),
@@ -67,6 +77,7 @@ class Aluno(models.Model):
 
     def __str__(self):
         return self.nome
+
 
 class FormularioMarcacao(models.Model):
     usuario = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -104,6 +115,7 @@ class FormularioMarcacao(models.Model):
         if self.curso and self.turno:
             return f"{self.curso.nome} ({self.get_turno_display()})"
         return None
+
 
 class Entrevista(models.Model):
     aluno = models.ForeignKey(Aluno, on_delete=models.CASCADE)

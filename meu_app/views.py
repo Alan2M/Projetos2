@@ -1,15 +1,15 @@
 from datetime import datetime, date, time, timedelta
 import calendar
 
-from django.shortcuts            import render, redirect, get_object_or_404
-from django.contrib               import messages
-from django.contrib.auth          import authenticate, login, logout
-from django.contrib.auth.models   import User
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.core.mail             import send_mail
-from django.conf                  import settings
+from django.core.mail import send_mail
+from django.conf import settings
 from django import forms
-from django.db                    import IntegrityError
+from django.db import IntegrityError
 
 from .models import (
     Perfil, Aluno, FormularioMarcacao, Curso, Entrevista
@@ -20,12 +20,7 @@ from .forms import (
 )
 
 
-# -----------------------------------------------------------
-#  Helpers
-# -----------------------------------------------------------
-
 def is_professor(user):
-    """Retorna True se o usuário for superuser ou perfil.tipo == 'professor'."""
     return (
         user.is_authenticated and (
             user.is_superuser or
@@ -33,10 +28,6 @@ def is_professor(user):
         )
     )
 
-
-# -----------------------------------------------------------
-#  Páginas públicas / autenticação
-# -----------------------------------------------------------
 
 def home(request):
     return render(request, "home.html", {
@@ -53,14 +44,14 @@ def processar_cadastro(request):
     if request.method != "POST":
         return redirect("cadastro")
 
-    email            = request.POST.get("email")
-    senha            = request.POST.get("senha")
-    confirmar_senha  = request.POST.get("confirmar-senha")
-    cpf              = request.POST.get("cpf")
-    nome             = request.POST.get("nome")
-    celular          = request.POST.get("celular")
-    data_nascimento  = request.POST.get("data-nascimento")
-    curso_id         = request.POST.get("curso")
+    email = request.POST.get("email")
+    senha = request.POST.get("senha")
+    confirmar_senha = request.POST.get("confirmar-senha")
+    cpf = request.POST.get("cpf")
+    nome = request.POST.get("nome")
+    celular = request.POST.get("celular")
+    data_nascimento = request.POST.get("data-nascimento")
+    curso_id = request.POST.get("curso")
 
     context = {
         "nome": nome,
@@ -77,7 +68,7 @@ def processar_cadastro(request):
         return render(request, "cadastro.html", context)
 
     if User.objects.filter(username=email).exists():
-        messages.error(request, "Já existe um usuário cadastrado com esse e‑mail.")
+        messages.error(request, "Já existe um usuário cadastrado com esse e-mail.")
         return render(request, "cadastro.html", context)
 
     if Perfil.objects.filter(cpf=cpf).exists():
@@ -91,9 +82,8 @@ def processar_cadastro(request):
         return render(request, "cadastro.html", context)
 
     try:
-        usuario   = User.objects.create_user(username=email, email=email, password=senha)
+        usuario = User.objects.create_user(username=email, email=email, password=senha)
         curso_obj = Curso.objects.filter(pk=curso_id).first() if curso_id else None
-
         Perfil.objects.create(
             user=usuario,
             nome=nome,
@@ -105,7 +95,6 @@ def processar_cadastro(request):
         )
         messages.success(request, "Cadastro realizado com sucesso!")
         return redirect("home")
-
     except Exception as e:
         messages.error(request, f"Erro ao cadastrar: {e}")
         return render(request, "cadastro.html", context)
@@ -114,11 +103,11 @@ def processar_cadastro(request):
 def login_usuario(request):
     if request.method == "POST":
         login_input = request.POST.get("email", "").strip()
-        senha       = request.POST.get("senha", "").strip()
+        senha = request.POST.get("senha", "").strip()
 
         user = authenticate(request, username=login_input, password=senha)
 
-        if user is None:                           # tentar username == email
+        if user is None:
             try:
                 by_email = User.objects.get(email=login_input)
                 user = authenticate(request, username=by_email.username, password=senha)
@@ -126,7 +115,7 @@ def login_usuario(request):
                 pass
 
         if user is None:
-            messages.error(request, "E‑mail ou senha incorretos!")
+            messages.error(request, "E-mail ou senha incorretos!")
         else:
             perfil = getattr(user, "perfil", None)
             if perfil is None:
@@ -148,10 +137,6 @@ def logout_usuario(request):
     logout(request)
     return redirect("home")
 
-
-# -----------------------------------------------------------
-#  Formulário socioeconômico
-# -----------------------------------------------------------
 
 @login_required
 def formulario_view(request):
@@ -182,19 +167,32 @@ def formulario_view(request):
 
         def calc(r):
             s = 0
-            if r["pessoas_moram"] == "Mais de dez": s += 3
-            elif r["pessoas_moram"] == "Oito a dez": s += 2
-            elif r["pessoas_moram"] == "Quatro a sete": s += 1
-            if r["casa"] in ["Cedida", "Outros"]: s += 2
-            if r["localizacao"] in ["Zona rural", "Comunidade indígena", "Comunidade quilombola"]: s += 2
-            if r["escolaridade_pai"] in ["Não estudou", "Não sei"]: s += 1
-            if r["escolaridade_mae"] in ["Não estudou", "Não sei"]: s += 1
-            if r["renda_familiar"] == "Nenhuma renda": s += 4
-            elif r["renda_familiar"] == "Até 1 salário mínimo": s += 3
-            elif r["renda_familiar"] == "De 1 a 3 salários mínimos": s += 2
-            if r["renda_mensal"] == "Nenhuma renda": s += 2
-            elif r["renda_mensal"] == "Até 1 salário mínimo": s += 1
-            if r["trabalha"] == "Não": s += 1
+            if r["pessoas_moram"] == "Mais de dez":
+                s += 3
+            elif r["pessoas_moram"] == "Oito a dez":
+                s += 2
+            elif r["pessoas_moram"] == "Quatro a sete":
+                s += 1
+            if r["casa"] in ["Cedida", "Outros"]:
+                s += 2
+            if r["localizacao"] in ["Zona rural", "Comunidade indígena", "Comunidade quilombola"]:
+                s += 2
+            if r["escolaridade_pai"] in ["Não estudou", "Não sei"]:
+                s += 1
+            if r["escolaridade_mae"] in ["Não estudou", "Não sei"]:
+                s += 1
+            if r["renda_familiar"] == "Nenhuma renda":
+                s += 4
+            elif r["renda_familiar"] == "Até 1 salário mínimo":
+                s += 3
+            elif r["renda_familiar"] == "De 1 a 3 salários mínimos":
+                s += 2
+            if r["renda_mensal"] == "Nenhuma renda":
+                s += 2
+            elif r["renda_mensal"] == "Até 1 salário mínimo":
+                s += 1
+            if r["trabalha"] == "Não":
+                s += 1
             return s
 
         score = calc(respostas)
@@ -213,14 +211,10 @@ def formulario_sucesso(request):
     return render(request, "formulario_sucesso.html")
 
 
-# -----------------------------------------------------------
-#  Painel do gestor (professor)
-# -----------------------------------------------------------
-
 @login_required
 @user_passes_test(is_professor)
 def painel_gestor(request):
-    form   = FiltroAlunoForm(request.GET or None)
+    form = FiltroAlunoForm(request.GET or None)
     alunos = Aluno.objects.all()
 
     if form.is_valid():
@@ -242,7 +236,7 @@ def painel_gestor(request):
 @login_required
 @user_passes_test(is_professor)
 def lista_alunos(request):
-    form   = FiltroAlunoForm(request.GET or None)
+    form = FiltroAlunoForm(request.GET or None)
     perfis = Perfil.objects.filter(tipo="aluno").select_related("user")
 
     if form.is_valid():
@@ -267,8 +261,8 @@ def lista_alunos(request):
 @login_required
 @user_passes_test(is_professor)
 def cadastrar_aluno(request):
-    nome       = request.GET.get("nome")
-    email      = request.GET.get("email")
+    nome = request.GET.get("nome")
+    email = request.GET.get("email")
     curso_nome = request.GET.get("curso")
 
     iniciais = {"nome": nome or "", "email": email or ""}
@@ -284,7 +278,7 @@ def cadastrar_aluno(request):
         form = AlunoForm(request.POST)
         if form.is_valid():
             if Aluno.objects.filter(email=form.cleaned_data["email"]).exists():
-                messages.error(request, "Já existe um aluno cadastrado com esse e‑mail.")
+                messages.error(request, "Já existe um aluno cadastrado com esse e-mail.")
             else:
                 aluno = form.save(commit=False)
                 if perfil_preexistente:
@@ -303,22 +297,18 @@ def cadastrar_aluno(request):
     return render(request, "cadastrar_aluno.html", {"form": form, "perfil": perfil_preexistente})
 
 
-# -----------------------------------------------------------
-#  Dashboard (apenas superusuário) – criação de Gestores
-# -----------------------------------------------------------
-
 @login_required
 @user_passes_test(lambda u: u.is_superuser)
 def inicio_gestor(request):
-    total_alunos      = Aluno.objects.count()
+    total_alunos = Aluno.objects.count()
     total_formularios = FormularioMarcacao.objects.count()
 
     context_inputs = {"username_val": "", "email_val": ""}
 
     if request.method == "POST":
         username = request.POST.get("username", "").strip()
-        email    = request.POST.get("email", "").strip()
-        senha    = request.POST.get("senha", "").strip()
+        email = request.POST.get("email", "").strip()
+        senha = request.POST.get("senha", "").strip()
 
         context_inputs.update({"username_val": username, "email_val": email})
 
@@ -327,7 +317,7 @@ def inicio_gestor(request):
         elif User.objects.filter(username=username).exists():
             messages.error(request, "Nome de usuário já cadastrado.")
         elif User.objects.filter(email=email).exists():
-            messages.error(request, "Já existe um usuário com este e‑mail.")
+            messages.error(request, "Já existe um usuário com este e-mail.")
         elif len(senha) < 6:
             messages.error(request, "A senha deve ter pelo menos 6 caracteres.")
         else:
@@ -342,7 +332,7 @@ def inicio_gestor(request):
                 messages.success(request, "Gestor criado com sucesso!")
                 return redirect("inicio_gestor")
             except IntegrityError:
-                messages.error(request, "Erro ao criar usuário. Verifique se nome ou e‑mail já existem.")
+                messages.error(request, "Erro ao criar usuário. Verifique se nome ou e-mail já existem.")
             except Exception as e:
                 messages.error(request, f"Erro inesperado: {e}")
 
@@ -353,20 +343,16 @@ def inicio_gestor(request):
     })
 
 
-# -----------------------------------------------------------
-#  Entrevistas – calendário, agendamento, edição
-# -----------------------------------------------------------
-
 @login_required
 @user_passes_test(is_professor)
 def calendario_entrevistas(request):
     hoje = date.today()
-    mes  = int(request.GET.get("mes", hoje.month))
-    ano  = int(request.GET.get("ano", hoje.year))
+    mes = int(request.GET.get("mes", hoje.month))
+    ano = int(request.GET.get("ano", hoje.year))
 
-    cal      = calendar.Calendar(firstweekday=6)
-    semanas  = cal.monthdatescalendar(ano, mes)
-    eventos  = {}
+    cal = calendar.Calendar(firstweekday=6)
+    semanas = cal.monthdatescalendar(ano, mes)
+    eventos = {}
 
     entrevistas_mes = Entrevista.objects.filter(data_hora__year=ano, data_hora__month=mes)
     for e in entrevistas_mes:
@@ -380,7 +366,7 @@ def calendario_entrevistas(request):
         "eventos": eventos,
         "nome_mes": calendar.month_name[mes],
         "anterior": {"mes": mes - 1 or 12, "ano": ano - 1 if mes == 1 else ano},
-        "proximo":  {"mes": mes + 1 if mes < 12 else 1, "ano": ano + 1 if mes == 12 else ano},
+        "proximo": {"mes": mes + 1 if mes < 12 else 1, "ano": ano + 1 if mes == 12 else ano},
     })
 
 
@@ -391,9 +377,9 @@ def agendar_vagas(request):
         form = AgendamentoForm(request.POST)
         if form.is_valid():
             curso = form.cleaned_data["curso"]
-            qtd   = form.cleaned_data["quantidade_alunos"]
+            qtd = form.cleaned_data["quantidade_alunos"]
             periodo = form.cleaned_data["periodo"]
-            dia     = form.cleaned_data["dia_agendamento"]
+            dia = form.cleaned_data["dia_agendamento"]
 
             inicio, fim = (time(8, 0), time(11, 0)) if periodo == "manha" else (time(13, 0), time(16, 0))
 
@@ -402,7 +388,8 @@ def agendar_vagas(request):
                 slots.append(atual)
                 atual += timedelta(minutes=30)
 
-            alunos = Aluno.objects.filter(curso=curso).order_by("-perfil__score_vulnerabilidade")[:len(slots)]
+            alunos = Aluno.objects.filter(curso=curso).order_by("-score")[:len(slots)]
+
 
             for aluno, dt in zip(alunos, slots):
                 Entrevista.objects.create(
@@ -410,6 +397,7 @@ def agendar_vagas(request):
                     local="R. Alcântara, 170 - Coqueiral, Recife - PE"
                 )
                 aluno.data_entrevista = dt
+                aluno.status = Aluno.Status.ENTREVISTA
                 aluno.save()
 
                 send_mail(
@@ -433,11 +421,11 @@ def agendar_vagas(request):
 @login_required
 @user_passes_test(is_professor)
 def lista_entrevistas_por_dia(request):
-    data_str   = request.GET.get("data")
+    data_str = request.GET.get("data")
     entrevistas = []
     if data_str:
         try:
-            dia         = datetime.strptime(data_str, "%Y-%m-%d").date()
+            dia = datetime.strptime(data_str, "%Y-%m-%d").date()
             entrevistas = Entrevista.objects.filter(data_hora__date=dia)
         except ValueError:
             messages.error(request, "Data inválida.")
@@ -462,8 +450,8 @@ def editar_entrevista(request, pk):
             return redirect("lista_entrevistas_por_dia")
     else:
         form = EntrevistaForm(instance=entrevista)
-        form.fields["aluno"].widget  = forms.HiddenInput()
-        form.fields["curso"].widget  = forms.HiddenInput()
+        form.fields["aluno"].widget = forms.HiddenInput()
+        form.fields["curso"].widget = forms.HiddenInput()
 
     return render(request, "editar_entrevista.html", {"form": form, "entrevista": entrevista})
 
@@ -487,13 +475,14 @@ def sucesso_agendamento(request):
 @user_passes_test(is_professor)
 def agendar_entrevista_individual(request):
     aluno_id = request.GET.get("aluno_id")
-    aluno    = get_object_or_404(Aluno, id=aluno_id) if aluno_id else None
+    aluno = get_object_or_404(Aluno, id=aluno_id) if aluno_id else None
 
     if request.method == "POST":
         form = EntrevistaForm(request.POST)
         if form.is_valid():
-            entrevista              = form.save()
-            aluno.data_entrevista   = entrevista.data_hora
+            entrevista = form.save()
+            aluno.data_entrevista = entrevista.data_hora
+            aluno.status = Aluno.Status.ENTREVISTA
             aluno.save()
             messages.success(request, "Entrevista agendada com sucesso.")
             return redirect("painel_gestor")
@@ -506,7 +495,7 @@ def agendar_entrevista_individual(request):
 @login_required
 @user_passes_test(is_professor)
 def lista_entrevistas_por_curso(request, curso_id):
-    curso       = get_object_or_404(Curso, pk=curso_id)
+    curso = get_object_or_404(Curso, pk=curso_id)
     entrevistas = Entrevista.objects.filter(curso=curso)
     return render(request, "entrevistas_por_curso.html", {"curso": curso, "entrevistas": entrevistas})
 
@@ -514,8 +503,8 @@ def lista_entrevistas_por_curso(request, curso_id):
 @login_required
 @user_passes_test(is_professor)
 def todas_entrevistas(request):
-    cursos      = Curso.objects.all().order_by("nome")
-    curso_id    = request.GET.get("curso")
+    cursos = Curso.objects.all().order_by("nome")
+    curso_id = request.GET.get("curso")
     entrevistas = Entrevista.objects.all().order_by("data_hora")
     if curso_id:
         entrevistas = entrevistas.filter(curso__id=curso_id)
@@ -526,10 +515,6 @@ def todas_entrevistas(request):
         "curso_selecionado": int(curso_id) if curso_id else None,
     })
 
-
-# -----------------------------------------------------------
-#  Gestão de Gestores (superusuário)
-# -----------------------------------------------------------
 
 @login_required
 @user_passes_test(lambda u: u.is_superuser)
@@ -542,18 +527,18 @@ def lista_professores(request):
 @user_passes_test(lambda u: u.is_superuser)
 def editar_professor(request, user_id):
     prof_user = get_object_or_404(User, id=user_id)
-    perfil    = prof_user.perfil
+    perfil = prof_user.perfil
 
     if request.method == "POST":
-        nome  = request.POST.get("nome", "").strip()
+        nome = request.POST.get("nome", "").strip()
         email = request.POST.get("email", "").strip()
         senha = request.POST.get("senha", "").strip()
 
         if not nome or not email:
-            messages.error(request, "Nome e e‑mail são obrigatórios.")
+            messages.error(request, "Nome e e-mail são obrigatórios.")
         else:
-            prof_user.email    = email
-            prof_user.username = email      # username = e‑mail
+            prof_user.email = email
+            prof_user.username = email
             if senha:
                 prof_user.set_password(senha)
             prof_user.save()
@@ -573,3 +558,9 @@ def excluir_professor(request, user_id):
     User.objects.filter(id=user_id).delete()
     messages.success(request, "Gestor excluído.")
     return redirect("lista_professores")
+
+
+@login_required
+def status_inscricao(request):
+    aluno = Aluno.objects.filter(email=request.user.email).first()
+    return render(request, "status.html", {"inscricao": aluno})

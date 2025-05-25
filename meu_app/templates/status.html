@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Meu Status de Inscrição{% endblock %}
+
+{% block head_extra %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+<style>
+  .topbar {
+    background: linear-gradient(to right, #27c274, #1f9c5c);
+    padding: 1.5rem;
+    text-align: center;
+  }
+  .topbar img {
+    height: 80px;
+  }
+  .container {
+    margin-top: 2.5rem;
+    margin-bottom: 2.5rem;
+  }
+  h1 {
+    margin-bottom: 2.5rem;
+  }
+  .stepper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 4rem 0;
+  }
+  .stepper .step {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    padding: 0 0.5rem;
+  }
+  .stepper .step:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    top: 24px;
+    right: -50%;
+    width: 100%;
+    height: 4px;
+    background-color: #ccc;
+    z-index: 0;
+  }
+  .stepper .step.completed:not(:last-child)::after {
+    background-color: #27c274;
+  }
+  .stepper .circle {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 3px solid #ccc;
+    background-color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+  }
+  .stepper .step.completed .circle {
+    background-color: #27c274;
+    border-color: #27c274;
+    color: #fff;
+  }
+  .stepper .label {
+    margin-top: 1rem;
+    font-size: 1rem;
+    text-align: center;
+    min-width: 80px;
+  }
+  .status-card {
+    border: none;
+    border-radius: 1rem;
+    box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.1);
+    margin-top: 3rem;
+    margin-bottom: 3rem;
+  }
+  .status-card .card-body {
+    padding: 3rem;
+  }
+  .status-badge {
+    font-size: 1.1rem;
+    padding: 0.5rem 1rem;
+    border-radius: 2rem;
+    margin-bottom: 2rem;
+  }
+  .status-message {
+    font-size: 1.2rem;
+    margin-bottom: 2.5rem;
+  }
+  .status-details {
+    display: flex;
+    justify-content: center;
+    gap: 5rem;
+    margin-bottom: 2.5rem;
+  }
+  .status-details .detail i {
+    font-size: 1.75rem;
+    color: #27c274;
+    margin-right: 0.75rem;
+  }
+  .status-details .label {
+    font-weight: 600;
+  }
+  .back-home {
+    margin-top: 3rem;
+    text-align: center;
+    font-size: 1.25rem;
+  }
+  .back-home a {
+    color: #27c274;
+    text-decoration: none;
+  }
+  .back-home a:hover {
+    text-decoration: underline;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <a href="{% url 'home' %}">
+    <img src="{% static 'logo_gestor.png' %}" alt="Solidreams">
+  </a>
+</div>
+
+<div class="container">
+  <h1 class="fw-semibold text-center">Meu Status de Inscrição</h1>
+
+  {% if inscricao %}
+    <div class="stepper">
+      <div class="step completed">
+        <div class="circle"><i class="bi bi-check-lg"></i></div>
+        <div class="label">Pendente</div>
+      </div>
+      <div class="step {% if inscricao.status != 'P' %}completed{% endif %}">
+        <div class="circle">{% if inscricao.status != 'P' %}<i class="bi bi-check-lg"></i>{% endif %}</div>
+        <div class="label">Confirmada</div>
+      </div>
+      <div class="step {% if inscricao.status in 'ER' %}completed{% endif %}">
+        <div class="circle">{% if inscricao.status in 'ER' %}<i class="bi bi-check-lg"></i>{% endif %}</div>
+        <div class="label">Entrevista</div>
+      </div>
+      <div class="step {% if inscricao.status == 'R' %}completed{% endif %}">
+        <div class="circle">{% if inscricao.status == 'R' %}<i class="bi bi-check-lg"></i>{% endif %}</div>
+        <div class="label">Concluída</div>
+      </div>
+    </div>
+
+    <div class="card status-card">
+      <div class="card-body text-center">
+        <h4 class="fw-bold mb-3">Status atual</h4>
+        <span class="badge status-badge
+          {% if inscricao.status == 'P' %}bg-secondary{% endif %}
+          {% if inscricao.status == 'C' %}bg-info text-dark{% endif %}
+          {% if inscricao.status == 'E' %}bg-warning text-dark{% endif %}
+          {% if inscricao.status == 'R' %}bg-danger{% endif %}">
+          {{ inscricao.get_status_display }}
+        </span>
+        <p class="status-message">
+          {% if inscricao.status == "C" %}
+            Sua inscrição foi confirmada. Em breve entraremos em contato para agendamento.
+          {% elif inscricao.status == "E" %}
+            Parabéns! Você foi selecionado para entrevista.
+          {% elif inscricao.status == "R" %}
+            Lamentamos, mas sua inscrição não foi aprovada.
+          {% else %}
+            Sua inscrição está em análise. Você será notificado por e-mail.
+          {% endif %}
+        </p>
+        {% with ent=inscricao.entrevista_set.last %}
+          {% if ent %}
+            <div class="status-details">
+              <div class="detail d-flex align-items-center">
+                <i class="bi bi-calendar-event-fill"></i>
+                <div>
+                  <div class="label">Data / hora</div>
+                  <div>{{ ent.data_hora|date:"d/m/Y H:i" }}</div>
+                </div>
+              </div>
+              <div class="detail d-flex align-items-center">
+                <i class="bi bi-geo-alt-fill"></i>
+                <div>
+                  <div class="label">Local</div>
+                  <div>{{ ent.local }}</div>
+                </div>
+              </div>
+            </div>
+          {% endif %}
+        {% endwith %}
+      </div>
+    </div>
+  {% else %}
+    <div class="alert alert-info text-center">Você ainda não possui inscrição ativa.</div>
+  {% endif %}
+
+  <div class="back-home">
+    <a href="{% url 'home' %}">← Voltar para Home</a>
+  </div>
+</div>
+{% endblock %}

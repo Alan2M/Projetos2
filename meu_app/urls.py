@@ -50,4 +50,5 @@ urlpatterns = [
     path('gestor/professores/editar/<int:user_id>/', views.editar_professor, name='editar_professor'),
     path('gestor/professores/excluir/<int:user_id>/', views.excluir_professor, name='excluir_professor'),
 
+    path("status/", views.status_inscricao, name="status"),
 ]
