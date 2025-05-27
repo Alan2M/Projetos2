@@ -3,7 +3,7 @@ name: Deploy Django to Azure
 on:
   push:
     branches:
-      - main  # ou troque para a branch desejada
+      - prod  # ou troque para a branch desejada
 
 jobs:
   build-and-deploy:
