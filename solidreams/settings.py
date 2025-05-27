@@ -2,45 +2,73 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
+# Caminho base do projeto
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Carrega variáveis do .env
 load_dotenv(BASE_DIR / '.env')
 
-TARGET_ENV = os.getenv('TARGET_ENV')
-NOT_PROD = not TARGET_ENV or not TARGET_ENV.lower().startswith('prod')
+# Detecta o ambiente
+TARGET_ENV = os.getenv('TARGET_ENV', 'dev')
+NOT_PROD = not TARGET_ENV.lower().startswith('prod')
 
+# Verifica variáveis obrigatórias em produção
+if not NOT_PROD:
+    required_vars = ['SECRET_KEY', 'DBNAME', 'DBUSER', 'DBPASS', 'DBHOST']
+    for var in required_vars:
+        if not os.getenv(var):
+            raise Exception(f"Variável obrigatória ausente: {var}")
+
+# Segurança e debug
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-dev-secret-key')
+DEBUG = os.getenv('DEBUG', 'True' if NOT_PROD else 'False').lower() in ['true', '1', 't']
+
+# Hosts e CSRF
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '127.0.0.1 localhost').replace(',', ' ').split()
+CSRF_TRUSTED_ORIGINS = (
+    os.getenv("CSRF_TRUSTED_ORIGINS", "").replace(',', ' ').split()
+    if not NOT_PROD else []
+)
+
+# Redirecionamento HTTPS
+SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', 'False').lower() in ['true', '1', 't']
+if SECURE_SSL_REDIRECT:
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Banco de dados
 if NOT_PROD:
-    DEBUG = True
-    SECRET_KEY = 'django-insecure-dev-secret-key'
-    ALLOWED_HOSTS = []
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
-    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 else:
-    DEBUG = os.getenv('DEBUG', '0').lower() in ['true', 't', '1']
-    SECRET_KEY = os.getenv('SECRET_KEY')
-    ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(' ')
-    csrf_origins = os.getenv('CSRF_TRUSTED_ORIGINS')
-    if csrf_origins:
-        CSRF_TRUSTED_ORIGINS = csrf_origins.split(' ')
-    SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', '0').lower() in ['true', 't', '1']
-    if SECURE_SSL_REDIRECT:
-        SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.environ.get('DBNAME'),
-            'HOST': os.environ.get('DBHOST'),
-            'USER': os.environ.get('DBUSER'),
-            'PASSWORD': os.environ.get('DBPASS'),
+            'NAME': os.getenv('DBNAME'),
+            'USER': os.getenv('DBUSER'),
+            'PASSWORD': os.getenv('DBPASS'),
+            'HOST': os.getenv('DBHOST'),
+            'PORT': '5432',
             'OPTIONS': {'sslmode': 'require'},
         }
     }
-    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
+# E-mails
+EMAIL_BACKEND = (
+    'django.core.mail.backends.console.EmailBackend' if NOT_PROD
+    else 'django.core.mail.backends.smtp.EmailBackend'
+)
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', 'solidreams.pe@gmail.com')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL = f'Instituto XYZ <{EMAIL_HOST_USER}>'
+
+# Aplicações instaladas
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -49,10 +77,11 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'whitenoise.runserver_nostatic',
-    'meu_app.apps.MeuAppConfig',
+    'meu_app.apps.MeuAppConfig',  # substitua pelo nome do seu app
     'widget_tweaks',
 ]
 
+# Middleware
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
@@ -64,8 +93,11 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+# Configurações de URL e WSGI
 ROOT_URLCONF = 'solidreams.urls'
+WSGI_APPLICATION = 'solidreams.wsgi.application'
 
+# Templates
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -81,8 +113,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'solidreams.wsgi.application'
-
+# Validação de senhas
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
@@ -90,22 +121,19 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
+# Internacionalização
 LANGUAGE_CODE = 'pt-br'
 TIME_ZONE = 'America/Recife'
 USE_I18N = True
 USE_TZ = True
 
+# Arquivos estáticos
 STATIC_URL = os.environ.get('DJANGO_STATIC_URL', '/static/')
+STATICFILES_DIRS = [BASE_DIR / 'static'] if (BASE_DIR / 'static').exists() else []
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
+# Outras configurações
 LOGOUT_REDIRECT_URL = '/'
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_URL = '/login/'
-
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', 'solidreams.pe@gmail.com')
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
-DEFAULT_FROM_EMAIL = f'Instituto XYZ <{EMAIL_HOST_USER}>'
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
