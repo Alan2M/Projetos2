@@ -1,0 +1,42 @@
+{% extends 'base_gestor.html' %}
+{% load widget_tweaks %}
+
+{% block title %}Responder Entrevista{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h2 class="mb-4 text-primary">📋 Responder e Finalizar Entrevista</h2>
+
+  <div class="mb-4 bg-light p-3 rounded">
+    <strong>Aluno:</strong> {{ entrevista.aluno.nome }}<br>
+    <strong>Email:</strong> {{ entrevista.aluno.email }}<br>
+    <strong>Curso pretendido:</strong> {{ entrevista.curso.nome }}<br>
+    <strong>Data da entrevista:</strong> {{ entrevista.data_hora|date:"d/m/Y H:i" }}<br>
+  </div>
+
+  <form method="post" class="bg-white p-4 shadow rounded">
+    {% csrf_token %}
+    
+    <div class="mb-3">
+      <label for="id_data_hora" class="form-label">Nova Data e Hora</label>
+      {{ form.data_hora|add_class:"form-control" }}
+    </div>
+
+    <div class="mb-3">
+      <label for="id_local" class="form-label">Local</label>
+      {{ form.local|add_class:"form-control" }}
+    </div>
+
+    <div class="mb-3">
+      <label for="id_curso" class="form-label">Curso Escolhido Definitivo</label>
+      {{ form.curso|add_class:"form-control" }}
+    </div>
+
+    <!-- Aqui você pode adicionar mais perguntas específicas da entrevista se desejar -->
+
+    <div class="text-end">
+      <button type="submit" class="btn btn-success">💾 Salvar e Finalizar</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

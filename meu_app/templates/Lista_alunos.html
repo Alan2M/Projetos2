@@ -1,0 +1,89 @@
+{% extends 'base_gestor.html' %}
+{% load widget_tweaks %}
+{% load custom_filters %}
+{% load static %}
+
+{% block title %}Filtrar Alunos Inscritos{% endblock %}
+
+{% block content %}
+<div class="content">
+  <h2 class="mb-4 text-primary">🔎 Filtrar Alunos Inscritos</h2>
+
+  <form method="get" class="row g-3 mb-4 bg-white p-4 shadow rounded">
+      <div class="col-md-3">
+          <label for="id_nome" class="form-label">Nome</label>
+          {{ form.nome|add_class:"form-control" }}
+      </div>
+      <div class="col-md-3">
+          <label for="id_email" class="form-label">Email (ou parte)</label>
+          {{ form.email|add_class:"form-control" }}
+      </div>
+      <div class="col-md-3">
+          <label for="id_cpf" class="form-label">CPF</label>
+          {{ form.cpf|add_class:"form-control" }}
+      </div>
+      <div class="col-md-3">
+          <label for="id_curso" class="form-label">Curso escolhido</label>
+          {{ form.curso|add_class:"form-control" }}
+      </div>
+      <div class="col-md-3">
+          <label for="id_data_inscricao" class="form-label">Data de Inscrição</label>
+          {{ form.data_inscricao|add_class:"form-control" }}
+      </div>
+      <div class="col-md-3">
+          <label for="ordenar_score" class="form-label">Ordenar por Score</label>
+          <select name="ordenar_score" id="ordenar_score" class="form-select">
+              <option value="">---</option>
+              <option value="asc" {% if request.GET.ordenar_score == 'asc' %}selected{% endif %}>Menor para maior</option>
+              <option value="desc" {% if request.GET.ordenar_score == 'desc' %}selected{% endif %}>Maior para menor</option>
+          </select>
+      </div>
+      <div class="col-12 text-end">
+          <button type="submit" class="btn btn-primary">Filtrar</button>
+          <a href="{% url 'lista_alunos' %}" class="btn btn-outline-secondary">Limpar</a>
+      </div>
+  </form>
+
+  <h3 class="text-success mb-3">📋 Alunos Inscritos</h3>
+  <div class="table-responsive">
+      <table class="table table-bordered table-striped shadow-sm">
+          <thead class="table-dark">
+              <tr>
+                  <th>Nome</th>
+                  <th>Email</th>
+                  <th>CPF</th>
+                  <th>Curso escolhido</th>
+                  <th>Data de Inscrição</th>
+                  <th>Score</th>
+                  <th>Ações</th>
+              </tr>
+          </thead>
+          <tbody>
+              {% for aluno in alunos %}
+              <tr>
+                  <td>{{ aluno.nome }}</td>
+                  <td>{{ aluno.user.email }}</td>
+                  <td>{{ aluno.cpf }}</td>
+                  <td>{{ aluno.curso }}</td>
+                  <td>{{ aluno.user.date_joined|date:"d/m/Y H:i" }}</td>
+                  <td>{{ aluno.score_vulnerabilidade }}</td>
+                  <td>
+                    {% if aluno.user.aluno %}
+                      <span class="text-muted">Já cadastrado</span>
+                    {% else %}
+                      <a href="{% url 'cadastrar_aluno' %}?nome={{ aluno.nome|urlencode }}&email={{ aluno.user.email|urlencode }}&curso={{ aluno.curso.nome|urlencode }}" class="btn btn-sm btn-success">
+                        Cadastrar
+                      </a>
+                    {% endif %}
+                  </td>
+              </tr>
+              {% empty %}
+              <tr>
+                  <td colspan="7" class="text-center text-muted">Nenhum aluno encontrado.</td>
+              </tr>
+              {% endfor %}
+          </tbody>
+      </table>
+  </div>
+</div>
+{% endblock %}

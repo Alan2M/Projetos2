@@ -1,0 +1,42 @@
+{% extends "base_gestor.html" %}
+{% load static %}
+
+{% block title %}Entrevistas do Dia{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h2 class="mb-4 text-primary">📅 Entrevistas para o dia {{ data|date:"d/m/Y" }}</h2>
+
+  {% if entrevistas %}
+    <table class="table table-bordered shadow-sm bg-white">
+      <thead class="table-dark">
+        <tr>
+          <th>Aluno</th>
+          <th>Curso</th>
+          <th>Horário</th>
+          <th>Local</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for e in entrevistas %}
+        <tr>
+          <td>{{ e.aluno.nome }}</td>
+          <td>{{ e.curso.nome }}</td>
+          <td>{{ e.data_hora|time:"H:i" }}</td>
+          <td>{{ e.local }}</td>
+          <td>
+            <a href="{% url 'editar_entrevista' e.id %}" class="btn btn-sm btn-warning">✏️ Editar</a>
+            <a href="{% url 'excluir_entrevista' e.id %}" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza que deseja excluir esta entrevista?');">🗑️ Excluir</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="text-muted">Nenhuma entrevista agendada para este dia.</p>
+  {% endif %}
+
+  <a href="{% url 'calendario_entrevistas' %}" class="btn btn-outline-secondary mt-3">⬅️ Voltar ao calendário</a>
+</div>
+{% endblock %}

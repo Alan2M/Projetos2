@@ -1,0 +1,66 @@
+{% extends "base_gestor.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block extra_css %}
+  <style>
+    .dash-card  { min-width:180px; }
+    .count-num  { font-size:32px;font-weight:700;margin:0 }
+  </style>
+{% endblock %}
+
+{% block content %}
+  <div class="container-xl">
+
+    <h2 class="mb-4">Bem‑vindo(a), Gestor!</h2>
+
+    <!-- cartões em linha, centralizados -->
+    <div class="row g-4 justify-content-center mb-5">
+      <div class="col-6 col-sm-4 col-lg-3">
+        <div class="dash-card card text-center shadow-sm p-3">
+          <h5 class="card-title"><i class="fas fa-users me-1"></i>Total de Alunos</h5>
+          <p class="count-num text-success">{{ total_alunos }}</p>
+        </div>
+      </div>
+      <div class="col-6 col-sm-4 col-lg-3">
+        <div class="dash-card card text-center shadow-sm p-3">
+          <h5 class="card-title"><i class="fas fa-file-alt me-1"></i>Formulários</h5>
+          <p class="count-num text-primary">{{ total_formularios }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- formulário centrado -->
+    <div class="row justify-content-center">
+      <div class="col-md-6 col-lg-5">
+        <div class="card shadow-sm">
+          <div class="card-header bg-success text-white text-center">
+            <i class="fas fa-user-plus me-1"></i>Criar Novo Gestor(a)
+          </div>
+          <div class="card-body">
+            <form method="post">
+              {% csrf_token %}
+              <div class="mb-3">
+                <label class="form-label">Nome de usuário</label>
+                <input type="text" name="username" value="{{ username_val|default:'' }}"
+                       class="form-control" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">E‑mail</label>
+                <input type="email" name="email" value="{{ email_val|default:'' }}"
+                       class="form-control" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Senha</label>
+                <input type="password" name="senha" class="form-control" required>
+              </div>
+              <button type="submit" class="btn btn-success w-100">
+                <i class="fas fa-save me-1"></i>Criar Gestor(a)
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+{% endblock %}

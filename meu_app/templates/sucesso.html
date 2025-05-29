@@ -1,0 +1,11 @@
+{% extends 'base_gestor.html' %}
+{% block content %}
+<div class="container mt-5">
+  <div class="alert alert-success text-center">
+    <h2 class="mb-3">✅ Entrevistas agendadas com sucesso!</h2>
+    <p>Os alunos foram notificados por e-mail com as datas e horários.</p>
+    <a href="{% url 'calendario_entrevistas' %}" class="btn btn-outline-primary mt-3">📅 Ver no calendário</a>
+    <a href="{% url 'agendar_entrevistas' %}" class="btn btn-success mt-3 ms-2">➕ Agendar mais entrevistas</a>
+  </div>
+</div>
+{% endblock %}

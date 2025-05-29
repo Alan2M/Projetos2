@@ -1,0 +1,100 @@
+{% extends "base_gestor.html" %}
+{% load static custom_filters %}
+
+{% block title %}Calendário de Entrevistas{% endblock %}
+
+{% block content %}
+<style>
+  .calendar-container {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 5px #ccc;
+  }
+  .calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .calendar-header h1 {
+    margin: 0;
+    font-size: 28px;
+  }
+  table.calendar {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+  .calendar th {
+    background: #e9e9e9;
+    padding: 10px 0;
+    font-weight: bold;
+    text-align: center;
+  }
+  .calendar td {
+    height: 80px;
+    text-align: left;
+    vertical-align: top;
+    background-color: #e5e5e5;
+    border: 1px solid #ddd;
+    padding: 4px;
+    font-size: 14px;
+  }
+  .calendar .outside-month {
+    background-color: #fff;
+  }
+  .calendar small {
+    color: #555;
+    font-weight: bold;
+  }
+  .event {
+    font-size: 12px;
+    margin-top: 4px;
+    display: block;
+    color: #1c7c1c;
+  }
+  .no-event {
+    font-size: 11px;
+    color: #999;
+    margin-top: 4px;
+    display: block;
+  }
+</style>
+
+<div class="calendar-container">
+  <div class="calendar-header">
+    <a class="btn btn-sm btn-outline-secondary" href="?mes={{ anterior.mes }}&ano={{ anterior.ano }}">&lt;</a>
+    <h1>{{ nome_mes }} {{ ano }}</h1>
+    <a class="btn btn-sm btn-outline-secondary" href="?mes={{ proximo.mes }}&ano={{ proximo.ano }}">&gt;</a>
+  </div>
+
+  <table class="calendar">
+    <thead>
+      <tr>
+        <th>DOM</th><th>SEG</th><th>TER</th><th>QUA</th><th>QUI</th><th>SEX</th><th>SAB</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for semana in semanas %}
+      <tr>
+        {% for dia in semana %}
+        <td class="{% if dia.month != mes %}outside-month{% endif %}">
+          <small>{{ dia.day|stringformat:"02d" }}</small>
+          {% with data=dia|date:"Y-m-d" %}
+            {% if eventos|get_item:data %}
+              <a href="{% url 'lista_entrevistas_por_dia' %}?data={{ data }}" class="event">
+                {{ eventos|get_item:data|length }} entrevista(s)
+              </a>
+            {% else %}
+              <span class="no-event">Nenhuma</span>
+            {% endif %}
+          {% endwith %}
+        </td>
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

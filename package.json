@@ -1,0 +1,15 @@
+{
+  "name": "projetos2-main",
+  "version": "1.0.0",
+  "description": "A **Solidreams** é uma plataforma inovadora desenvolvida por estudantes da CESAR School, com o objetivo de conectar pessoas que desejam realizar sonhos com aquelas dispostas a ajudar. Utilizando tecnologia de ponta e uma abordagem centrada no usuário, a Solidreams permite que usuários compartilhem seus sonhos e encontrem apoiadores dispostos a contribuir para sua realização.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "cypress": "^14.4.0"
+  }
+}

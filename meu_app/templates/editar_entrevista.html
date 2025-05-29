@@ -1,0 +1,50 @@
+{% extends 'base_gestor.html' %}
+{% load static %}
+
+{% block title %}✏️ Editar Entrevista{% endblock %}
+
+{% block content %}
+  <div class="card shadow-sm mt-4">
+    <div class="card-body">
+      <h3 class="text-warning mb-4"><i class="fas fa-pencil-alt me-2"></i>Editar Entrevista</h3>
+
+      <!-- Dados do aluno -->
+      <div class="mb-3">
+        <strong>Nome:</strong> {{ entrevista.aluno.nome }}
+      </div>
+      <div class="mb-3">
+        <strong>E-mail:</strong> {{ entrevista.aluno.email }}
+      </div>
+      <div class="mb-3">
+        <strong>CPF:</strong> {{ entrevista.aluno.cpf }}
+      </div>
+
+      <form method="post">
+        {% csrf_token %}
+
+        <!-- Campos ocultos (se quiser garantir no POST) -->
+        <input type="hidden" name="aluno" value="{{ entrevista.aluno.id }}">
+        <input type="hidden" name="curso" value="{{ entrevista.curso.id }}">
+
+        <!-- Apenas Data e Hora e Local são editáveis -->
+        <div class="mb-3">
+          {{ form.data_hora.label_tag }}
+          {{ form.data_hora }}
+          {% for error in form.data_hora.errors %}
+            <div class="text-danger">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <div class="mb-3">
+          {{ form.local.label_tag }}
+          {{ form.local }}
+          {% for error in form.local.errors %}
+            <div class="text-danger">{{ error }}</div>
+          {% endfor %}
+        </div>
+
+        <button type="submit" class="btn btn-success me-2">Salvar Alterações</button>
+        <a href="{% url 'lista_entrevistas_por_dia' %}" class="btn btn-secondary">Cancelar</a>
+      </form>
+    </div>
+  </div>
+{% endblock %}

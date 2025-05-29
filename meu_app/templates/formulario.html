@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Formulário de Marcação - Solidreams</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  {% load static %}
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    body {
+      margin: 0;
+      background-color: #f9f9f9;
+    }
+
+    header {
+      width: 100%;
+      height: 60px; 
+      background-color: #f0f0f0;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 40px auto;
+      background-color: #fff;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    .form-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .form-header img {
+      width: 180px;
+      height: auto;
+      margin-bottom: 10px;
+    }
+
+    .form-header h1 {
+      font-size: 24px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .form-section {
+      margin-bottom: 25px;
+    }
+
+    .form-section .question {
+      font-weight: 600;
+      font-size: 16px;
+      margin-bottom: 12px;
+      color: #222;
+    }
+
+    .form-section label {
+      display: inline-block;
+      font-size: 14px;
+      margin-bottom: 8px;
+      color: #333;
+    }
+
+    .form-section input[type="radio"],
+    .form-section select {
+      margin-bottom: 10px;
+    }
+
+    .form-section input[type="radio"] {
+      margin-right: 8px;
+    }
+
+    select {
+      width: 100%;
+      padding: 12px;
+      font-size: 14px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
+    .button-group {
+      display: flex;
+      justify-content: flex-end;
+      gap: 15px;
+      margin-top: 30px;
+    }
+
+    button {
+      padding: 12px 25px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    button[type="submit"] {
+      background-color: #5cb85c;
+      color: white;
+    }
+
+    button[type="reset"] {
+      background-color: #d9534f;
+      color: white;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        margin: 20px;
+        padding: 20px;
+      }
+
+      .form-header h1 {
+        font-size: 20px;
+      }
+
+      .button-group {
+        flex-direction: column;
+        align-items: stretch;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  {% include "header.html" %}
+
+  <div class="container">
+    <div class="form-header">
+      <img src="{% static 'solidreamslogo.png' %}" alt="Logo Solidreams" />
+      <h1>Formulário de Marcação</h1>
+    </div>
+
+    <form method="POST">
+      {% csrf_token %}
+
+      <div class="form-section">
+        <div class="question">1. Quantas pessoas moram com você?</div>
+        <label><input type="radio" name="pessoas_moram" value="Moro sozinho" required> Moro sozinho</label><br>
+        <label><input type="radio" name="pessoas_moram" value="Uma a três"> Uma a três</label><br>
+        <label><input type="radio" name="pessoas_moram" value="Quatro a sete"> Quatro a sete</label><br>
+        <label><input type="radio" name="pessoas_moram" value="Oito a dez"> Oito a dez</label><br>
+        <label><input type="radio" name="pessoas_moram" value="Mais de dez"> Mais de dez</label>
+      </div>
+
+      <div class="form-section">
+        <div class="question">2. A casa onde você mora é?</div>
+        <label><input type="radio" name="casa" value="Própria" required> Própria</label><br>
+        <label><input type="radio" name="casa" value="Alugada"> Alugada</label><br>
+        <label><input type="radio" name="casa" value="Cedida"> Cedida</label><br>
+        <label><input type="radio" name="casa" value="Outros"> Outros</label>
+      </div>
+
+      <div class="form-section">
+        <div class="question">3. Sua casa está localizada em?</div>
+        <label><input type="radio" name="localizacao" value="Zona rural" required> Zona rural</label><br>
+        <label><input type="radio" name="localizacao" value="Zona urbana"> Zona urbana</label><br>
+        <label><input type="radio" name="localizacao" value="Comunidade indígena"> Comunidade indígena</label><br>
+        <label><input type="radio" name="localizacao" value="Comunidade quilombola"> Comunidade quilombola</label>
+      </div>
+
+      <div class="form-section">
+        <div class="question">4. Qual é o nível de escolaridade do seu pai?</div>
+        <select name="escolaridade_pai" required>
+          <option value="" disabled selected>Selecione</option>
+          <option value="Da 1ª à 4ª série do Ensino Fundamental">Da 1ª à 4ª série</option>
+          <option value="Da 5ª à 8ª série do Ensino Fundamental">Da 5ª à 8ª série</option>
+          <option value="Ensino Médio">Ensino Médio</option>
+          <option value="Ensino Superior">Ensino Superior</option>
+          <option value="Especialização">Especialização</option>
+          <option value="Não estudou">Não estudou</option>
+          <option value="Não sei">Não sei</option>
+        </select>
+      </div>
+
+      <div class="form-section">
+        <div class="question">5. Qual é o nível de escolaridade da sua mãe?</div>
+        <select name="escolaridade_mae" required>
+          <option value="" disabled selected>Selecione</option>
+          <option value="Da 1ª à 4ª série do Ensino Fundamental">Da 1ª à 4ª série</option>
+          <option value="Da 5ª à 8ª série do Ensino Fundamental">Da 5ª à 8ª série</option>
+          <option value="Ensino Médio">Ensino Médio</option>
+          <option value="Ensino Superior">Ensino Superior</option>
+          <option value="Especialização">Especialização</option>
+          <option value="Não estudou">Não estudou</option>
+          <option value="Não sei">Não sei</option>
+        </select>
+      </div>
+
+      <div class="form-section">
+        <div class="question">6. Qual a renda familiar mensal aproximada?</div>
+        <select name="renda_familiar" required>
+          <option value="" disabled selected>Selecione</option>
+          <option value="Nenhuma renda">Nenhuma renda</option>
+          <option value="Até 1 salário mínimo">Até 1 salário mínimo</option>
+          <option value="De 1 a 3 salários mínimos">De 1 a 3 salários mínimos</option>
+          <option value="De 3 a 6 salários mínimos">De 3 a 6 salários mínimos</option>
+          <option value="De 6 a 9 salários mínimos">De 6 a 9 salários mínimos</option>
+          <option value="Mais de 9 salários mínimos">Mais de 9 salários mínimos</option>
+        </select>
+      </div>
+
+      <div class="form-section">
+        <div class="question">7. Qual a sua renda mensal?</div>
+        <select name="renda_mensal" required>
+          <option value="" disabled selected>Selecione</option>
+          <option value="Nenhuma renda">Nenhuma renda</option>
+          <option value="Até 1 salário mínimo">Até 1 salário mínimo</option>
+          <option value="De 1 a 3 salários mínimos">De 1 a 3 salários mínimos</option>
+          <option value="De 3 a 6 salários mínimos">De 3 a 6 salários mínimos</option>
+          <option value="Mais de 6 salários mínimos">Mais de 6 salários mínimos</option>
+        </select>
+      </div>
+
+      <div class="form-section">
+        <div class="question">8. Você trabalha ou já trabalhou?</div>
+        <label><input type="radio" name="trabalha" value="Sim" required> Sim</label><br>
+        <label><input type="radio" name="trabalha" value="Não"> Não</label>
+      </div>
+
+      <div class="button-group">
+        <button type="reset">Limpar</button>
+        <button type="submit">Enviar</button>
+      </div>
+    </form>
+  </div>
+  <div class="mb-3">
+    <label for="{{ form.curso.id_for_label }}">Curso desejado</label>
+    {{ form.curso }}
+  </div>
+  <div class="mb-3">
+    <label for="{{ form.turno.id_for_label }}">Turno desejado</label>
+    {{ form.turno }}
+  </div>
+</body>
+</html>

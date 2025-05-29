@@ -1,0 +1,79 @@
+{% extends 'base_gestor.html' %}
+{% load static %}
+
+{% block title %}Painel do Gestor – Alunos{% endblock %}
+
+{% block content %}
+  <h2>Alunos Cadastrados</h2>
+
+  <!-- Filtro de Alunos -->
+  <div class="filter-box" id="filtrar-alunos">
+    <h3>Filtrar Alunos</h3>
+    <form method="get" class="row g-2">
+      <div class="col-md-3">
+        <input type="text" name="nome" placeholder="Nome" value="{{ request.GET.nome }}" class="form-control">
+      </div>
+      <div class="col-md-3">
+        <input type="email" name="email" placeholder="Email" value="{{ request.GET.email }}" class="form-control">
+      </div>
+      <div class="col-md-3">
+        <select name="curso" class="form-select">
+          <option value="">Todos os cursos</option>
+          {% for c in cursos %}
+            <option value="{{ c.id }}" {% if request.GET.curso == c.id|stringformat:"s" %}selected{% endif %}>{{ c.nome }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <input type="date" name="data_inscricao" value="{{ request.GET.data_inscricao }}" class="form-control">
+      </div>
+      <div class="col-md-1 d-grid">
+        <button type="submit" class="btn btn-primary">Filtrar</button>
+      </div>
+      <div class="col-md-1 d-grid">
+        <a href="{% url 'painel_gestor' %}" class="btn btn-secondary">Limpar</a>
+      </div>
+    </form>
+  </div>
+
+  <!-- Tabela de Alunos -->
+  <div class="table-responsive mt-4">
+    <table class="table table-striped table-hover">
+      <thead>
+        <tr>
+          <th>Aluno</th>
+          <th>Curso (Turno)</th>
+          <th>Data de inscrição</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for aluno in alunos %}
+        <tr>
+          <td>{{ aluno.nome }}</td>
+          <td>
+            {{ aluno.curso.nome }}
+            {% if aluno.preferencia_turno %}
+              ({{ aluno.get_preferencia_turno_display }})
+            {% endif %}
+          </td>
+          <td>{{ aluno.data_inscricao|date:"d/m/Y" }}</td>
+          <td>
+            {% if aluno.data_entrevista %}
+              <span class="badge bg-success">Concluído</span>
+            {% else %}
+              <a href="{% url 'agendar_entrevista' %}?aluno_id={{ aluno.id }}" class="btn btn-outline-primary btn-sm">
+                <i class="fas fa-calendar-plus me-1"></i>Agendar
+              </a>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="4" class="text-center">Nenhum aluno encontrado.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}
