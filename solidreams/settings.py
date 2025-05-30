@@ -20,7 +20,7 @@ if not NOT_PROD:
             raise Exception(f"Variável obrigatória ausente: {var}")
 
 # Segurança e debug
-SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-dev-secret-key')
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-prod-secret-key')
 DEBUG = os.getenv('DEBUG', 'True' if NOT_PROD else 'False').lower() in ['true', '1', 't']
 
 # Hosts e CSRF
