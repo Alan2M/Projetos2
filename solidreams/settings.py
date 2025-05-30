@@ -9,7 +9,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / '.env')
 
 # Detecta o ambiente
-TARGET_ENV = os.getenv('TARGET_ENV', 'dev')
+TARGET_ENV = os.getenv('TARGET_ENV', 'prod')
 NOT_PROD = not TARGET_ENV.lower().startswith('prod')
 
 # Verifica variáveis obrigatórias em produção
