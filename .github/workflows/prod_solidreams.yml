@@ -32,7 +32,7 @@ jobs:
         echo "DBHOST=${{ secrets.DBHOST }}" >> $GITHUB_ENV
         echo "TARGET_ENV=prod" >> $GITHUB_ENV
         echo "DEBUG=False" >> $GITHUB_ENV
-        echo "ALLOWED_HOSTS=solidreams01-baauaxdmdsbpekax.azurewebsites.net" >> $GITHUB_ENV
+        echo "ALLOWED_HOSTS=solidreamss-ergee5addqeyewg9.brazilsouth-01.azurewebsites.net" >> $GITHUB_ENV
 
     - name: Coletar arquivos estáticos
       run: python manage.py collectstatic --noinput
@@ -43,6 +43,6 @@ jobs:
     - name: Deploy para Azure Web App
       uses: azure/webapps-deploy@v3
       with:
-        app-name: 'solidreamss'  # Confirme esse nome no portal Azure
+        app-name: 'solidreamss-ergee5addqeyewg9'  # Nome exato do App no Azure
         publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
         package: .
