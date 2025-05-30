@@ -33,6 +33,7 @@ jobs:
         echo "TARGET_ENV=prod" >> $GITHUB_ENV
         echo "DEBUG=False" >> $GITHUB_ENV
         echo "ALLOWED_HOSTS=solidreams01-baauaxdmdsbpekax.azurewebsites.net" >> $GITHUB_ENV
+        # Adicione outras variáveis que seu settings.py usar
 
     - name: Coletar arquivos estáticos
       run: python manage.py collectstatic --noinput
