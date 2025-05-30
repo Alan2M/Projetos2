@@ -1,4 +1,4 @@
-name: Deploy Azure - Produção
+name: Deploy Django to Azure
 
 on:
   push:
@@ -6,57 +6,43 @@ on:
       - prod
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 🔄 Checkout do código
-        uses: actions/checkout@v4
+    - name: Checkout código
+      uses: actions/checkout@v3
 
-      - name: 🐍 Configurar Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
+    - name: Configurar Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
 
-      - name: 📦 Instalar dependências do Django
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+    - name: Instalar dependências
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
 
-      - name: 🔐 Criar .env temporário para Django
-        run: |
-          cat <<EOF > .env
-          SECRET_KEY=${{ secrets.SECRET_KEY }}
-          DBNAME=${{ secrets.DBNAME }}
-          DBUSER=${{ secrets.DBUSER }}
-          DBPASS=${{ secrets.DBPASS }}
-          DBHOST=${{ secrets.DBHOST }}
-          ALLOWED_HOSTS=${{ secrets.ALLOWED_HOSTS }}
-          CSRF_TRUSTED_ORIGINS=${{ secrets.CSRF_TRUSTED_ORIGINS }}
-          SECURE_SSL_REDIRECT=${{ secrets.SECURE_SSL_REDIRECT }}
-          TARGET_ENV=${{ secrets.TARGET_ENV }}
-          DEBUG=0
-          EOF
+    - name: Exportar variáveis de ambiente para o processo
+      run: |
+        echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> $GITHUB_ENV
+        echo "DBNAME=${{ secrets.DBNAME }}" >> $GITHUB_ENV
+        echo "DBUSER=${{ secrets.DBUSER }}" >> $GITHUB_ENV
+        echo "DBPASS=${{ secrets.DBPASS }}" >> $GITHUB_ENV
+        echo "DBHOST=${{ secrets.DBHOST }}" >> $GITHUB_ENV
+        echo "TARGET_ENV=prod" >> $GITHUB_ENV
+        echo "DEBUG=False" >> $GITHUB_ENV
+        echo "ALLOWED_HOSTS=solidreams01-baauaxdmdsbpekax.azurewebsites.net" >> $GITHUB_ENV
 
-      - name: 🧩 Aplicar migrações do banco de dados
-        run: python manage.py migrate
+    - name: Coletar arquivos estáticos
+      run: python manage.py collectstatic --noinput
 
-      - name: 🧪 Rodar testes Django
-        run: python manage.py test
+    - name: Rodar migrações
+      run: python manage.py migrate
 
-      - name: 🗂️ Coletar arquivos estáticos
-        run: python manage.py collectstatic --noinput
-
-      - name: 🧹 Remover arquivos sensíveis
-        run: rm -f .env db.sqlite3 || true
-
-      - name: 📁 Criar pacote de deploy
-        run: |
-          zip -r django_app.zip . -x "*.git*" "cypress/*" "node_modules/*"
-
-      - name: 🚀 Fazer deploy no Azure Web App
-        uses: azure/webapps-deploy@v3
-        with:
-          app-name: 'PaginaViradaStore'
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          package: django_app.zip
+    - name: Deploy para Azure Web App
+      uses: azure/webapps-deploy@v3
+      with:
+        app-name: solidreamss  # Confirme esse nome no portal Azure
+        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+        package: .
