@@ -1,4 +1,4 @@
-name: 🚀 Deploy Azure - Produção Solidreamss
+name: Deploy Azure - Produção
 
 on:
   push:
@@ -8,6 +8,18 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
+    # Variáveis de ambiente necessárias para produção
+    env:
+      SECRET_KEY: ${{ secrets.SECRET_KEY }}
+      DBNAME: ${{ secrets.DBNAME }}
+      DBUSER: ${{ secrets.DBUSER }}
+      DBPASS: ${{ secrets.DBPASS }}
+      DBHOST: ${{ secrets.DBHOST }}
+      ALLOWED_HOSTS: ${{ secrets.ALLOWED_HOSTS }}
+      CSRF_TRUSTED_ORIGINS: ${{ secrets.CSRF_TRUSTED_ORIGINS }}
+      SECURE_SSL_REDIRECT: ${{ secrets.SECURE_SSL_REDIRECT }}
+      TARGET_ENV: ${{ secrets.TARGET_ENV }}
 
     steps:
       - name: 🔄 Checkout do código
@@ -24,12 +36,6 @@ jobs:
           pip install -r requirements.txt
 
       - name: 🧩 Aplicar migrações do banco de dados
-        env:
-          DBHOST: ${{ secrets.DBHOST }}
-          DBNAME: ${{ secrets.DBNAME }}
-          DBUSER: ${{ secrets.DBUSER }}
-          DBPASS: ${{ secrets.DBPASS }}
-          SECRET_KEY: ${{ secrets.SECRET_KEY }}
         run: python manage.py migrate
 
       - name: 🧪 Rodar testes Django
@@ -50,6 +56,6 @@ jobs:
       - name: 🚀 Fazer deploy no Azure Web App
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'solidreamss-ergee5addqeyewg9'
+          app-name: 'PaginaViradaStore'
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
           package: django_app.zip
