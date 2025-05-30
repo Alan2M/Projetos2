@@ -9,18 +9,6 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
-    # Variáveis de ambiente necessárias para produção
-    env:
-      SECRET_KEY: ${{ secrets.SECRET_KEY }}
-      DBNAME: ${{ secrets.DBNAME }}
-      DBUSER: ${{ secrets.DBUSER }}
-      DBPASS: ${{ secrets.DBPASS }}
-      DBHOST: ${{ secrets.DBHOST }}
-      ALLOWED_HOSTS: ${{ secrets.ALLOWED_HOSTS }}
-      CSRF_TRUSTED_ORIGINS: ${{ secrets.CSRF_TRUSTED_ORIGINS }}
-      SECURE_SSL_REDIRECT: ${{ secrets.SECURE_SSL_REDIRECT }}
-      TARGET_ENV: ${{ secrets.TARGET_ENV }}
-
     steps:
       - name: 🔄 Checkout do código
         uses: actions/checkout@v4
@@ -35,6 +23,21 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: 🔐 Criar .env temporário para Django
+        run: |
+          cat <<EOF > .env
+          SECRET_KEY=${{ secrets.SECRET_KEY }}
+          DBNAME=${{ secrets.DBNAME }}
+          DBUSER=${{ secrets.DBUSER }}
+          DBPASS=${{ secrets.DBPASS }}
+          DBHOST=${{ secrets.DBHOST }}
+          ALLOWED_HOSTS=${{ secrets.ALLOWED_HOSTS }}
+          CSRF_TRUSTED_ORIGINS=${{ secrets.CSRF_TRUSTED_ORIGINS }}
+          SECURE_SSL_REDIRECT=${{ secrets.SECURE_SSL_REDIRECT }}
+          TARGET_ENV=${{ secrets.TARGET_ENV }}
+          DEBUG=0
+          EOF
+
       - name: 🧩 Aplicar migrações do banco de dados
         run: python manage.py migrate
 
@@ -45,9 +48,7 @@ jobs:
         run: python manage.py collectstatic --noinput
 
       - name: 🧹 Remover arquivos sensíveis
-        run: |
-          rm -f db.sqlite3
-          rm -f .env || true
+        run: rm -f .env db.sqlite3 || true
 
       - name: 📁 Criar pacote de deploy
         run: |
