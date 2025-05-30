@@ -3,7 +3,7 @@ name: Deploy Django App to Azure
 on:
   push:
     branches:
-      - prod  # Só dispara quando você fizer push na branch "prod"
+      - prod
 
 jobs:
   deploy:
@@ -16,6 +16,6 @@ jobs:
     - name: Deploy para Azure Web App
       uses: azure/webapps-deploy@v3
       with:
-        app-name: 'solidreamss'  # Nome do App Service no Azure
+        app-name: 'solidreamss-ergee5addqeyewg9'
         publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
         package: .
