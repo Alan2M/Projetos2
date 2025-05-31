@@ -23,6 +23,16 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Exportar variáveis de ambiente para o Django
+        run: |
+          echo "DBNAME=${{ secrets.DBNAME }}" >> $GITHUB_ENV
+          echo "DBUSER=${{ secrets.DBUSER }}" >> $GITHUB_ENV
+          echo "DBPASS=${{ secrets.DBPASS }}" >> $GITHUB_ENV
+          echo "DBHOST=${{ secrets.DBHOST }}" >> $GITHUB_ENV
+          echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> $GITHUB_ENV
+          echo "DEBUG=False" >> $GITHUB_ENV
+          echo "ALLOWED_HOSTS=solidreamss-ergee5addqeyewg9.brazilsouth-01.azurewebsites.net" >> $GITHUB_ENV
+
       - name: 🗂️ Coletar arquivos estáticos
         run: python manage.py collectstatic --noinput
 
