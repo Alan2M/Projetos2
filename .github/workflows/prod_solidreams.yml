@@ -1,4 +1,4 @@
-name: Deploy Django to Azure
+name: Deploy Azure - Produção solidreamss
 
 on:
   push:
@@ -6,32 +6,34 @@ on:
       - prod
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout código
-      uses: actions/checkout@v3
+      - name: 🔄 Checkout do código
+        uses: actions/checkout@v4
 
-    - name: Configurar Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.10'
+      - name: 🐍 Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
 
-    - name: Instalar dependências
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
+      - name: 📦 Instalar dependências do Django
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
-    - name: Coletar arquivos estáticos
-      run: python manage.py collectstatic --noinput
+      - name: 🗂️ Coletar arquivos estáticos
+        run: python manage.py collectstatic --noinput
 
-    - name: Rodar migrações
-      run: python manage.py migrate
+      - name: 🧹 Remover arquivos sensíveis
+        run: |
+          rm -f db.sqlite3
+          rm -f .env || true
 
-    - name: Deploy para Azure Web App
-      uses: azure/webapps-deploy@v2
-      with:
-        app-name: solidreams
-        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-        package: .
+      - name: 🚀 Fazer deploy no Azure Web App solidreamss
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: 'solidreamss'  # Seu nome exato no Azure
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: .
