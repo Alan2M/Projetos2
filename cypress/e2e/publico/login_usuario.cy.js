@@ -3,7 +3,7 @@ describe('login_usuario.cy.js', () => {
     cy.visit('/login/');
     cy.get('input[name="email"]').type('usuario_teste@email.com');
     cy.get('input[name="senha"]').type('senha123');
-    cy.get('select[name="tipo"]').select('aluno'); // ou 'professor' dependendo do teste
+    cy.get('select[name="tipo"]').select('aluno');
     cy.get('button[type="submit"]').click();
     cy.url().should('include', '/');
   });
