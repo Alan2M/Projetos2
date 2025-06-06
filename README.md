@@ -36,7 +36,7 @@ Seja contribuindo para projetos significativos ou buscando inspiração em hist�
   <a href="https://www.youtube.com/watch?v=F_YGHyUTBEo&ab_channel=JO%C3%83OGUILHERME">
     <img src="https://img.shields.io/badge/Screencast Gestor-b50404?style=for-the-badge&logo=youtube&logoColor=white"/></a>
   <a href="https://youtu.be/H4ztKfhx33U">
-    <img src="https://img.shields.io/badge/Screencast Gestor-b50404?style=for-the-badge&logo=youtube&logoColor=white"/></a>
+    <img src="https://img.shields.io/badge/Screencast testes-b50404?style=for-the-badge&logo=youtube&logoColor=white"/></a>
 </div>
 
 ---
