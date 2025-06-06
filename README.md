@@ -28,8 +28,9 @@ Seja contribuindo para projetos significativos ou buscando inspiração em hist�
   <a href="https://drive.google.com/drive/u/5/mobile/folders/1voThyh9W-vWl4N67OoPbXEBuWsn96uo-?usp=sharing&sort=13&direction=a">
     <img src="https://img.shields.io/badge/Google_Drive-F4B400?style=for-the-badge&logo=google&logoColor=white" alt="Pasta Compartilhada"/></a>
   <a href="https://new.express.adobe.com/id/urn:aaid:sc:US:7cb8185c-f66a-47cb-a601-0a5c49bdf0d9?accept=true&category=search">
-    <img src="https://img.shields.io/badge/Apresentação Slides-8A2BE2?style=for-the-badge&logo=adobeacrobatreader&logoColor=white" alt="Apresentação"/>
-  </a>
+    <img src="https://img.shields.io/badge/Apresentação Slides-8A2BE2?style=for-the-badge&logo=adobeacrobatreader&logoColor=white" alt="Apresentação"/></a>
+  <a href="https://miro.com/app/board/uXjVISin1vY=/">
+  <img src="https://img.shields.io/badge/Miro-FFD700?style=for-the-badge&logo=miro&logoColor=black" alt="Miro Board"/></a>
   <a href="https://www.youtube.com/watch?v=F_YGHyUTBEo&ab_channel=JO%C3%83OGUILHERME">
     <img src="https://img.shields.io/badge/Screencast Usuário-b50404?style=for-the-badge&logo=youtube&logoColor=white"/></a>
   <a href="https://www.youtube.com/watch?v=F_YGHyUTBEo&ab_channel=JO%C3%83OGUILHERME">
